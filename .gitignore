@@ -1,0 +1,8 @@
+.vscode/
+*.pyc
+build/
+dist/
+hypigu.egg-info/
+build/
+__pycache__
+.DS_Store
