@@ -267,17 +267,14 @@ class brat:
 	def __ne__(self, other):
 		return not self == other
 	
-	def denominator_signature(self):
-		return self._d_sig
-
-	def formatted_denominator(self):
+	def denominator(self):
 		mon = lambda v: prod(x**e for x, e in zip(self.variables, v))
 		return self._d_sig["monomial"] * prod(
 			(1 - mon(v))**e for v, e in self._d_sig["factors"].items()
 		)
 
-	def formatted_numerator(self):
-		return self._n_sig
+	def denominator_signature(self):
+		return self._d_sig
 
 	def invert_variables(self, quotient=False):
 		R = self.rational_function()
@@ -287,12 +284,15 @@ class brat:
 			return brat(R_inv/R)
 		return brat(R_inv)
 
-	def latex(self, split=False, align_environment=False):
+	def latex(self, split=False):
 		N, D = _format(self, latex=True)
 		if split:
 			return (f"{N}", f"{D}")
 		return f"\\dfrac{{{N}}}{{{D}}}"
 	
+	def numerator(self):
+			return self._n_sig
+		
 	def rational_function(self):
 		return self._n_poly / self._d_poly
 	
@@ -332,8 +332,8 @@ class brat:
 			return Q
 		
 	def top_bottom_multiply(self, expr):
-		N = self.formatted_numerator()
-		D = self.formatted_denominator()
+		N = self.numerator()
+		D = self.denominator()
 		N_new = brat(N * expr)
 		D_new = brat(1/(D * expr))
 		Q = N_new / D_new
