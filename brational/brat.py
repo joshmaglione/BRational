@@ -35,7 +35,11 @@ def get_poly(f, P):
 
 def _get_signature(R, N, D, verbose=False):
 	varbs = R.gens()
-	deg = lambda m: vector(ZZ, [m.degree(v) for v in varbs])
+	def deg(m):
+		try: 
+			return vector(ZZ, [m.degree(v) for v in varbs])
+		except TypeError:
+			return vector(ZZ, [m.degree() for _ in varbs])
 	mon = lambda v: R(prod(x**e for x, e in zip(varbs, v)))
 	D_factors = list(D.factor())
 	gp_factors = {}
@@ -108,15 +112,16 @@ def _process_input(R):
 		return ([], N, D, N, {"monomial": D, "factors": {}})
 	try:	# Not sure how best to do this. Argh!
 		varbs = (R.numerator()*R.denominator()).parent().gens()
-	except AttributeError:
+	except AttributeError and RuntimeError:
 		varbs = R.variables()
 	P = PolynomialRing(QQ, varbs)
+	poly_varbs = P.gens()
 	N = get_poly(R.numerator(), P)
 	D = get_poly(R.denominator(), P)
 	R_simple = (N / D).factor().expand()
 	N, D = R_simple.numerator(), R_simple.denominator()
 	N_form, gp_facts = _get_signature(P, N, D)
-	return (varbs, N, D, N_form, gp_facts)
+	return (poly_varbs, N, D, N_form, gp_facts)
 
 def _format(B, latex=False):
 	if latex:
@@ -125,17 +130,20 @@ def _format(B, latex=False):
 		wrap = lambda X: str(X)
 	numer = B._n_sig
 	mon_n = numer.monomials()
+	n_wrap = len(mon_n) > 1
 	n_str = ""
 	for i, m in enumerate(mon_n[::-1]):
+		c = numer.monomial_coefficient(m)
 		if i == 0:
-			n_str += wrap(numer.monomial_coefficient(m)*m)
+			n_str += wrap(c*m)
+			if not n_wrap:
+				n_wrap = not c in ZZ
 		else: 
-			c = numer.monomial_coefficient(m)
 			if c > 0:
 				n_str += " + " + wrap(numer.monomial_coefficient(m)*m)
 			else:
 				n_str += " - " + wrap(-numer.monomial_coefficient(m)*m)
-	if not latex and len(mon_n) > 1:
+	if not latex and n_wrap:
 		n_str = "(" + n_str + ")"
 	varbs = B.variables
 	mon = lambda v: prod(x**e for x, e in zip(varbs, v))
@@ -154,9 +162,9 @@ def _format(B, latex=False):
 				d_str += f"(1 - {wrap(mon(v))})^{{{e}}}"
 			else:
 				d_str += f"(1 - {wrap(mon(v))})^{e}"
-		if not latex:
+		if not latex and gp_list[-1] != (v, e):
 			d_str += "*"
-	if not latex:
+	if not latex and len(gp_list) > 1:
 		d_str = "(" + d_str + ")"
 	return (n_str, d_str)
 
@@ -288,6 +296,33 @@ class brat:
 	def rational_function(self):
 		return self._n_poly / self._d_poly
 	
+	def set_denominator(self, expression=None, signature=None):
+		if expression:
+			if expression == 0:
+				raise ValueError("Expression cannot be zero.")
+			quotient = expression / self._d_poly
+			if quotient.denominator().degree() != 0:
+				raise ValueError("Denominator must divide expression.")
+			D_new = brat(1/expression)
+			N_new = brat(self._n_poly * quotient)
+			F = N_new / D_new
+			F._n_poly = N_new._n_poly
+			F._d_poly = D_new._d_poly
+			F._n_sig = N_new._n_sig
+			F._d_sig = D_new._d_sig
+			return F
+		if signature is None:
+			raise ValueError("Must provide an expression or signature.")
+		if not isinstance(signature, dict) or not "factors" in signature:
+			raise TypeError("Signature must be a dictionary with key 'factors'.")
+		if not "monomial" in signature:
+			signature.update({"monomial": 1})
+		expr = signature["monomial"] * prod(
+			(1 - prod(x**e for x, e in zip(self.variables, v)))**e 
+			for v, e in signature["factors"].items()
+		)
+		return self.set_denominator(expression=expr)
+	
 	def subs(self, S:dict):
 		R = self.rational_function()
 		Q = R.subs(S)
@@ -295,3 +330,15 @@ class brat:
 			return brat(Q)
 		except ValueError:
 			return Q
+		
+	def top_bottom_multiply(self, expr):
+		N = self.formatted_numerator()
+		D = self.formatted_denominator()
+		N_new = brat(N * expr)
+		D_new = brat(1/(D * expr))
+		Q = N_new / D_new
+		Q._n_poly = N_new._n_poly
+		Q._d_poly = D_new._d_poly
+		Q._n_sig = N_new._n_sig
+		Q._d_sig = D_new._d_sig
+		return Q
