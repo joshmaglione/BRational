@@ -33,6 +33,15 @@ def get_poly(f, P):
 	else:
 		raise TypeError("Numerator must be a polynomial.")
 
+def _unfold_signature(R, sig, exp_func=lambda e: True):
+	varbs = R.gens()
+	mon = lambda v: R(prod(x**e for x, e in zip(varbs, v)))
+	if not "monomial" in sig:
+		sig.update({"monomial": 1})
+	return sig["monomial"]*prod(
+		(1 - mon(v))**abs(e) for v, e in sig["factors"].items() if exp_func(e)
+	)
+
 def _get_signature(R, N, D, verbose=False):
 	varbs = R.gens()
 	def deg(m):
@@ -72,8 +81,8 @@ def _get_signature(R, N, D, verbose=False):
 			my_print(verbose, f"data: ({k}, {r}, {n})", 2)
 			r_num, r_den = R(r.numerator()), R(r.denominator())
 			const *= k
-			v = tuple(deg(r_num) - deg(r_den))
 			if r_num.monomial_coefficient(r_num.monomials()[0]) > 0:
+				v = tuple(deg(r_num) - deg(r_den))
 				v_n = tuple(n*(deg(r_num) - deg(r_den)))
 				my_print(verbose, f"n-degree: {v_n}", 2)
 				my_print(verbose, f"degree: {v}", 2)
@@ -90,10 +99,30 @@ def _get_signature(R, N, D, verbose=False):
 				D_factors.append(((r_den**n + (-r_num)**n), e))
 				pos_facts *= (r_den - r_num)**e
 		D_factors = D_factors[1:]
-	N_form = N*pos_facts*prod(
-		(1 - mon(v))**(-e) for v, e in gp_factors.items() if e < 0
+	my_print(verbose, f"Final factors: {gp_factors}", 1)
+	my_print(verbose, f"Accumulated factors: {pos_facts}", 1)
+	# Clean up the monomial a little bit. 
+	pos_facts_cleaned = R.one()
+	for n_mon, e in list(pos_facts.factor()):
+		k, r, n = _is_finite_gp(n_mon)
+		r_num, r_den = R(r.numerator()), R(r.denominator())
+		if r_num.monomial_coefficient(r_num.monomials()[0]) > 0:
+			v = tuple(deg(r_num) - deg(r_den))
+			v_n = tuple(n*(deg(r_num) - deg(r_den)))
+			if v_n in gp_factors:
+				m = min(e, gp_factors[v_n])
+				gp_factors[v_n] -= m
+				pos_facts_cleaned *= k*(1 - mon(v_n))**(e - m)
+			if v in gp_factors:
+				gp_factors[v] += e
+			else:
+				gp_factors[v] = e
+	N_form = N*pos_facts_cleaned*_unfold_signature(
+		R, {"factors": gp_factors}, lambda e: e < 0
 	)
-	D_form = const*prod((1 - mon(v))**e for v, e in gp_factors.items() if e > 0)
+	D_form = const*_unfold_signature(
+		R, {"factors": gp_factors}, lambda e: e > 0
+	)
 	if N_form/D_form != N/D:
 		print("ERROR!")
 		print(f"Expected:\n\t{N/D}")
@@ -106,46 +135,66 @@ def _get_signature(R, N, D, verbose=False):
 	gp_factors = {v: e for v, e in gp_factors.items() if e > 0}
 	return (N_form, {"monomial": const, "factors": gp_factors})
 
-def _process_input(R):
-	if R in QQ:
+def _process_input(num, dem, sig=None, fix=True):
+	R = num/dem
+	if R in QQ and (dem is None or dem in QQ):
 		N, D = R.numerator(), R.denominator()
-		return ([], N, D, N, {"monomial": D, "factors": {}})
+		return (QQ, N, {"monomial": D, "factors": {}})
 	try:	# Not sure how best to do this. Argh!
 		varbs = (R.numerator()*R.denominator()).parent().gens()
 	except AttributeError and RuntimeError:
 		varbs = R.variables()
 	P = PolynomialRing(QQ, varbs)
-	poly_varbs = P.gens()
-	N = get_poly(R.numerator(), P)
-	D = get_poly(R.denominator(), P)
-	R_simple = (N / D).factor().expand()
-	N, D = R_simple.numerator(), R_simple.denominator()
-	N_form, gp_facts = _get_signature(P, N, D)
-	return (poly_varbs, N, D, N_form, gp_facts)
+	if fix:
+		N = get_poly(num, P)
+		D = get_poly(dem, P)
+	else: 
+		N = get_poly(R.numerator(), P)
+		D = get_poly(R.denominator(), P)
+	if sig is None:
+		N_new, D_sig = _get_signature(P, N, D)
+	else:
+		D_sig = sig
+		N_new = N
+	return (P, N_new, D_sig)
+
+def _remove_unnecessary_braces(latex_text):
+	import re
+	pattern = re.compile(r'\^\{.\}')
+	def remove_braces(match):
+		return f"^{match.group(0)[2]}"
+	return pattern.sub(remove_braces, latex_text)
+
 
 def _format(B, latex=False):
 	if latex:
 		wrap = lambda X: LaTeX(X)
 	else:
 		wrap = lambda X: str(X)
-	numer = B._n_sig
-	mon_n = numer.monomials()
-	n_wrap = len(mon_n) > 1
-	n_str = ""
-	for i, m in enumerate(mon_n[::-1]):
-		c = numer.monomial_coefficient(m)
-		if i == 0:
-			n_str += wrap(c*m)
-			if not n_wrap:
-				n_wrap = not c in ZZ
-		else: 
-			if c > 0:
-				n_str += " + " + wrap(numer.monomial_coefficient(m)*m)
-			else:
-				n_str += " - " + wrap(-numer.monomial_coefficient(m)*m)
-	if not latex and n_wrap:
-		n_str = "(" + n_str + ")"
-	varbs = B.variables
+	if B.increasing_order:
+		ORD = -1
+	else:
+		ORD = 1
+	numer = B._n_poly
+	if numer in ZZ:
+		n_str = wrap(numer)
+		n_wrap = False
+	else:
+		mon_n = numer.monomials()
+		n_wrap = len(mon_n) > 1
+		n_str = ""
+		for i, m in enumerate(mon_n[::ORD]):
+			c = numer.monomial_coefficient(m)
+			if i == 0:
+				n_str += wrap(c*m)
+				if not n_wrap:
+					n_wrap = not c in ZZ
+			else: 
+				if c > 0:
+					n_str += " + " + wrap(numer.monomial_coefficient(m)*m)
+				else:
+					n_str += " - " + wrap(-numer.monomial_coefficient(m)*m)
+	varbs = B._ring.gens()
 	mon = lambda v: prod(x**e for x, e in zip(varbs, v))
 	d_str = ""
 	if B._d_sig["monomial"] != 1:
@@ -166,6 +215,8 @@ def _format(B, latex=False):
 			d_str += "*"
 	if not latex and len(gp_list) > 1:
 		d_str = "(" + d_str + ")"
+	if not latex and n_wrap and d_str != "":
+		n_str = "(" + n_str + ")"
 	return (n_str, d_str)
 
 class brat:
@@ -173,30 +224,40 @@ class brat:
 	def __init__(self, 
 			rational_expression=None, 
 			numerator=None, 
-			denominator=None
+			denominator=None,
+			denominator_signature=None,
+			fix_denominator=True,
+			increasing=True
 		):
 		if not denominator is None and denominator == 0:
 			raise ValueError("Denominator cannot be zero.")
-		if rational_expression is None:
-			R = numerator / denominator
-		else:
-			R = rational_expression
+		if not rational_expression is None:
 			try:
-				_ = R.numerator()
-				_ = R.denominator()
+				N = rational_expression.numerator()
+				D = rational_expression.denominator()
 			except AttributeError:
 				raise TypeError("Input must be a rational function.")
-		T = _process_input(R)
-		self.variables = T[0]		# Tuple of variables
+		else: 
+			if numerator is None or (denominator is None and denominator_signature is None):
+				raise ValueError("Must provide a numerator and denominator.")
+			N = numerator
+			if denominator is None:
+				if not isinstance(denominator_signature, dict):
+					raise TypeError("Denominator signature must be a dictionary.")
+				if not "factors" in denominator_signature:
+					denominator_signature = {"factors": denominator_signature}
+				D = _unfold_signature(N.parent(), denominator_signature)
+			else:
+				D = denominator
+		T = _process_input(N, D, sig=denominator_signature, fix=fix_denominator)
+		self._ring = T[0]			# Parent ring for rational function
 		self._n_poly = T[1]			# Numerator polynomial
-		self._d_poly = T[2]			# Denominator polynomial
-		self._n_sig = T[3]			# Numerator for the denominator from d_sig
-		self._d_sig = T[4]			# Denominator with form \prod_i (1 - M_i)
-									# recorded as a dictionary
+		self._d_sig = T[2]			# Denominator with form \prod_i (1 - M_i)
+		self.increasing_order = increasing
 
 	def __repr__(self) -> str:
 		N, D = _format(self)
-		if self._d_poly == 1:
+		if D == "":
 			return f"{N}"
 		return f"{N}/{D}"
 	
@@ -268,60 +329,61 @@ class brat:
 		return not self == other
 	
 	def denominator(self):
-		mon = lambda v: prod(x**e for x, e in zip(self.variables, v))
-		return self._d_sig["monomial"] * prod(
-			(1 - mon(v))**e for v, e in self._d_sig["factors"].items()
-		)
+		return _unfold_signature(self._ring, self._d_sig)
 
 	def denominator_signature(self):
 		return self._d_sig
 
-	def invert_variables(self, quotient=False):
-		R = self.rational_function()
-		Xs = R.parent().gens()
-		R_inv = R.subs({x: x**-1 for x in Xs})
-		if quotient:
-			return brat(R_inv/R)
-		return brat(R_inv)
+	def fix_denominator(self, expression=None, signature=None):
+		if expression:
+			if expression == 0:
+				raise ValueError("Expression cannot be zero.")
+			D_new = brat(1/expression)
+			return self.fix_denominator(signature=D_new.denominator_signature())
+		if signature is None:
+			raise ValueError("Must provide an expression or signature.")
+		if not isinstance(signature, dict):
+			raise TypeError("Signature must be a dictionary.")
+		if not "factors" in signature:
+			signature = {"factors": signature}
+		expr = _unfold_signature(self._ring, signature)
+		new_numer = self._ring(self._n_poly*expr/self.denominator())
+		if not new_numer.denominator() in ZZ:
+			raise ValueError("New denominator must be a multiple of the old one.")
+		return brat(
+			numerator=new_numer, 
+			denominator_signature=signature,
+			fix_denominator=True,
+			increasing=self.increasing_order
+		)
+
+	def invert_variables(self):
+		varbs = self._ring.gens()
+		mon = lambda v: self._ring(prod(x**e for x, e in zip(varbs, v)))
+		factor = prod(
+			mon(v)**e*(-1)**e for v, e in self._d_sig["factors"].items()
+		)
+		N = self._ring(self._n_poly.subs({x: x**-1 for x in varbs})*factor)
+		try:
+			return brat(
+				numerator=N, 
+				denominator_signature=self._d_sig, 
+				increasing=self.increasing_order
+			)
+		except ValueError:
+			return N/self.denominator()
 
 	def latex(self, split=False):
 		N, D = _format(self, latex=True)
 		if split:
 			return (f"{N}", f"{D}")
-		return f"\\dfrac{{{N}}}{{{D}}}"
+		return _remove_unnecessary_braces(f"\\dfrac{{{N}}}{{{D}}}")
 	
 	def numerator(self):
-			return self._n_sig
+			return self._n_poly
 		
 	def rational_function(self):
-		return self._n_poly / self._d_poly
-	
-	def set_denominator(self, expression=None, signature=None):
-		if expression:
-			if expression == 0:
-				raise ValueError("Expression cannot be zero.")
-			quotient = expression / self._d_poly
-			if quotient.denominator().degree() != 0:
-				raise ValueError("Denominator must divide expression.")
-			D_new = brat(1/expression)
-			N_new = brat(self._n_poly * quotient)
-			F = N_new / D_new
-			F._n_poly = N_new._n_poly
-			F._d_poly = D_new._d_poly
-			F._n_sig = N_new._n_sig
-			F._d_sig = D_new._d_sig
-			return F
-		if signature is None:
-			raise ValueError("Must provide an expression or signature.")
-		if not isinstance(signature, dict) or not "factors" in signature:
-			raise TypeError("Signature must be a dictionary with key 'factors'.")
-		if not "monomial" in signature:
-			signature.update({"monomial": 1})
-		expr = signature["monomial"] * prod(
-			(1 - prod(x**e for x, e in zip(self.variables, v)))**e 
-			for v, e in signature["factors"].items()
-		)
-		return self.set_denominator(expression=expr)
+		return self._n_poly / self.denominator()
 	
 	def subs(self, S:dict):
 		R = self.rational_function()
@@ -330,15 +392,6 @@ class brat:
 			return brat(Q)
 		except ValueError:
 			return Q
-		
-	def top_bottom_multiply(self, expr):
-		N = self.numerator()
-		D = self.denominator()
-		N_new = brat(N * expr)
-		D_new = brat(1/(D * expr))
-		Q = N_new / D_new
-		Q._n_poly = N_new._n_poly
-		Q._d_poly = D_new._d_poly
-		Q._n_sig = N_new._n_sig
-		Q._d_sig = D_new._d_sig
-		return Q
+
+	def variables(self):
+		return self._ring.gens()

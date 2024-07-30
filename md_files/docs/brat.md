@@ -21,7 +21,9 @@ The (ordered) keyword arguments for `brat` are
 
 Upon construction of a `brat`, the rational function is simplified.  
 
-One can use the usual algebraic operations with `brat`. When adding a `brat` with something else, we attempt to make another `brat` object. To "opt out", use the method `rational_function`.
+One can use the usual algebraic operations with `brat`: add, subtract, multiply, divide (i.e. 'true' divide), powers. The Boolean relations `==` and `!=` can also be used. When adding a `brat` with something else, we attempt to make another `brat` object. To "opt out", use the method `rational_function`. 
+
+**Warning:** we cannot do anything about algebraic operations where the first object is *not* a `brat` object. For example, if `F` is a `brat` but `G` is a polynomial in SageMath, then `G + F` may raise errors, while `F + G` will attempt to add the two objects&mdash;other errors may arise.
 
 ### Examples
 
