@@ -15,11 +15,16 @@ where the following hold:
 
 The (ordered) keyword arguments for `brat` are
 
-- `rational_expression`: the rational function,
-- `numerator`: the numerator polynomial of the rational function,
-- `denominator`: the denominator polynomial of the rational function.
+- `rational_expression`: the rational function (default: `None`),
+- `numerator`: the numerator polynomial of the rational function (default: `None`),
+- `denominator`: the denominator polynomial of the rational function (default: `None`),
+- `denominator_signature`: the dictionary of data for the denominator (default: `None`),
+- `fix_denominator`: whether to keep the given denominator fixed (default: `True`),
+- `increasing_order`: whether to display polynomials in increasing degree (default: `True`).
 
-Upon construction of a `brat`, the rational function is simplified.  
+*Additional notes*. The `denominator_signature` must be a dictionary whose keys are tuples of non-negative integers and whose keys are non-negative integers. If given a `denominator_signature`, the `numerator` will be used to determine the accepted ordered variables. [We do this by looking to its parent ring if `numerator` is a polynomial, or at the variables present if a symbolic expression.] Examples of acceptable `denominator_signature` are given below.
+
+### Algebraic operations and relations
 
 One can use the usual algebraic operations with `brat`: add, subtract, multiply, divide (i.e. 'true' divide), powers. The Boolean relations `==` and `!=` can also be used. When adding a `brat` with something else, we attempt to make another `brat` object. To "opt out", use the method `rational_function`. 
 
@@ -112,6 +117,10 @@ sage: F.denominator_signature()
  'factors': {(2, 0, 0): 5, (0, 4, 0): 3, (1, 1, 1): 1, (2, 1, 0): 1}}
 ```
 
+## .increasing_order
+
+This *attribute* is set to `True` by default&mdash;unless it was set to `False` upon construction. This can be toggled to either `True` or `False`. It will affect the print out and the `.latex` method.
+
 ## .invert_variables
 
 Returns the corresponding `brat` after inverting all of the variables and then rewriting the rational function so that all exponents are non-negative. 
@@ -153,7 +162,7 @@ Returns the reduced rational function. The underlying type of this object is not
 
 This method should be used if you do not want SageMath to convert to a `brat` after applying operations to the rational function.
 
-## .set_denominator
+## .fix_denominator
 
 Given a polynomial&mdash;or data equivalent to a polynomial (see arguments)&mdash;returns a new `brat`, equal to the original, whose denominator is the given polynomial.
 
@@ -168,17 +177,9 @@ Given a dictionary of the desired substitutions, return the new `brat` obtained 
 
 This works in the same as the `subs` method for rational functions in SageMath. 
 
-## .top_bottom_multiply
-
-Returns a new `brat`, equal to the original, where the numerator and denominator is multiplied by the given polynomial expression. 
-
-This is a specialization of the [set_denominator](#set_denominator) method.
-
 ## .variables
 
 Returns the variables used in the brat. These are polynomial variables rather than symbolic variables. 
-
-This is an *attribute* not a method, so that arguments cannot be passed. 
 
 #### Example 
 
@@ -197,7 +198,7 @@ sage: F
 
 We extract the variables and note that the type of variables have changed to be polynomial variables. 
 ```python
-sage: varbs = F.variables
+sage: varbs = F.variables()
 sage: varbs
 (x, y, z)
 sage: type(varbs[0])

@@ -158,13 +158,21 @@ def _process_input(num, dem, sig=None, fix=True):
 		N_new = N
 	return (P, N_new, D_sig)
 
-def _remove_unnecessary_braces(latex_text):
+def _remove_unnecessary_braces_and_spaces(latex_text):
 	import re
-	pattern = re.compile(r'\^\{.\}')
+	patt_braces = re.compile(r'\^\{.\}')
+	patt_spaces = re.compile(r'[0-9] [a-zA-Z0-9]')
 	def remove_braces(match):
 		return f"^{match.group(0)[2]}"
-	return pattern.sub(remove_braces, latex_text)
-
+	def remove_spaces(match):
+		return match.group(0)[0] + match.group(0)[2]
+	return patt_spaces.sub(
+		remove_spaces, 
+		patt_braces.sub(
+			remove_braces, 
+			latex_text
+		)
+	)
 
 def _format(B, latex=False):
 	if latex:
@@ -227,7 +235,7 @@ class brat:
 			denominator=None,
 			denominator_signature=None,
 			fix_denominator=True,
-			increasing=True
+			increasing_order=True
 		):
 		if not denominator is None and denominator == 0:
 			raise ValueError("Denominator cannot be zero.")
@@ -253,7 +261,7 @@ class brat:
 		self._ring = T[0]			# Parent ring for rational function
 		self._n_poly = T[1]			# Numerator polynomial
 		self._d_sig = T[2]			# Denominator with form \prod_i (1 - M_i)
-		self.increasing_order = increasing
+		self.increasing_order = increasing_order
 
 	def __repr__(self) -> str:
 		N, D = _format(self)
@@ -377,7 +385,7 @@ class brat:
 		N, D = _format(self, latex=True)
 		if split:
 			return (f"{N}", f"{D}")
-		return _remove_unnecessary_braces(f"\\dfrac{{{N}}}{{{D}}}")
+		return _remove_unnecessary_braces_and_spaces(f"\\dfrac{{{N}}}{{{D}}}")
 	
 	def numerator(self):
 			return self._n_poly
