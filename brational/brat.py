@@ -124,10 +124,10 @@ def _get_signature(R, N, D, verbose=False):
 		R, {"factors": gp_factors}, lambda e: e > 0
 	)
 	if N_form/D_form != N/D:
-		print("ERROR!")
-		print(f"Expected:\n\t{N/D}")
-		print(f"Numerator:\n\t{N_form}")
-		print(f"Denominator:\n\t{D_form}")
+		my_print(verbose, "ERROR!")
+		my_print(verbose, f"Expected:\n\t{N/D}")
+		my_print(verbose, f"Numerator:\n\t{N_form}")
+		my_print(verbose, f"Denominator:\n\t{D_form}")
 		raise ValueError("Error in implementation. Contact Josh.")
 	if const < 0:
 		N_form = -N_form
@@ -135,9 +135,12 @@ def _get_signature(R, N, D, verbose=False):
 	gp_factors = {v: e for v, e in gp_factors.items() if e > 0}
 	return (N_form, {"monomial": const, "factors": gp_factors})
 
-def _process_input(num, dem, sig=None, fix=True):
-	R = num/dem
-	if R in QQ and (dem is None or dem in QQ):
+def _process_input(num, dem=None, sig=None, fix=True):
+	if dem is None:
+		R = num
+	else:
+		R = num/dem
+	if R in QQ and (dem is None or dem in QQ) and (sig is None or sig["factors"] == {}):
 		N, D = R.numerator(), R.denominator()
 		return (QQ, N, {"monomial": D, "factors": {}})
 	try:	# Not sure how best to do this. Argh!
@@ -145,6 +148,8 @@ def _process_input(num, dem, sig=None, fix=True):
 	except AttributeError and RuntimeError:
 		varbs = R.variables()
 	P = PolynomialRing(QQ, varbs)
+	if dem is None:
+		dem = _unfold_signature(P, sig)
 	if fix:
 		N = get_poly(num, P)
 		D = get_poly(dem, P)
@@ -152,7 +157,7 @@ def _process_input(num, dem, sig=None, fix=True):
 		N = get_poly(R.numerator(), P)
 		D = get_poly(R.denominator(), P)
 	if sig is None:
-		N_new, D_sig = _get_signature(P, N, D)
+		N_new, D_sig = _get_signature(P, P(N), P(D))
 	else:
 		D_sig = sig
 		N_new = N
@@ -254,10 +259,15 @@ class brat:
 					raise TypeError("Denominator signature must be a dictionary.")
 				if not "factors" in denominator_signature:
 					denominator_signature = {"factors": denominator_signature}
-				D = _unfold_signature(N.parent(), denominator_signature)
+				D = None
 			else:
 				D = denominator
-		T = _process_input(N, D, sig=denominator_signature, fix=fix_denominator)
+		T = _process_input(
+			N, 
+			dem=D, 
+			sig=denominator_signature, 
+			fix=fix_denominator
+		)
 		self._ring = T[0]			# Parent ring for rational function
 		self._n_poly = T[1]			# Numerator polynomial
 		self._d_sig = T[2]			# Denominator with form \prod_i (1 - M_i)
@@ -362,7 +372,7 @@ class brat:
 			numerator=new_numer, 
 			denominator_signature=signature,
 			fix_denominator=True,
-			increasing=self.increasing_order
+			increasing_order=self.increasing_order
 		)
 
 	def invert_variables(self):
@@ -371,21 +381,22 @@ class brat:
 		factor = prod(
 			mon(v)**e*(-1)**e for v, e in self._d_sig["factors"].items()
 		)
-		N = self._ring(self._n_poly.subs({x: x**-1 for x in varbs})*factor)
-		try:
+		N = self._n_poly.subs({x: x**-1 for x in varbs})*factor
+		if N.denominator() in ZZ:
 			return brat(
-				numerator=N, 
+				numerator=self._ring(N), 
 				denominator_signature=self._d_sig, 
-				increasing=self.increasing_order
+				increasing_order=self.increasing_order
 			)
-		except ValueError:
-			return N/self.denominator()
+		return N/self.denominator()
 
 	def latex(self, split=False):
 		N, D = _format(self, latex=True)
+		N_clean = _remove_unnecessary_braces_and_spaces(N)
+		D_clean = _remove_unnecessary_braces_and_spaces(D)
 		if split:
-			return (f"{N}", f"{D}")
-		return _remove_unnecessary_braces_and_spaces(f"\\dfrac{{{N}}}{{{D}}}")
+			return (f"{N_clean}", f"{D_clean}")
+		return f"\\dfrac{{{N_clean}}}{{{D_clean}}}"
 	
 	def numerator(self):
 			return self._n_poly

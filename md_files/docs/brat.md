@@ -8,10 +8,12 @@ The class we use to format rational functions is `brat`, and the kinds of ration
 where the following hold:
 
 - $\bm{X}=(X_1, \dots, X_n)$ are variables,
-- $F(\bm{X})\in \mathbb{Q}[\bm{X}]$,
-- $C\in \mathbb{Q}$, 
+- $F(\bm{X})\in \mathbb{Z}[\bm{X}]$,
+- $C\in \mathbb{Z}$, 
 - $m\in\N_0$, 
 - $\alpha_i\in\N_0^n$, where $\bm{X}^{\alpha_i} = X_1^{\alpha_{i,1}}\cdots X_n^{\alpha_{i,n}}$.
+
+The rules are sometimes bent in fortunate circumstances, for example $C$ might be a monomial in $\mathbb{Z}[\bm{X}]$. The above assumption is the minimal **main assumption**.
 
 The (ordered) keyword arguments for `brat` are
 
@@ -22,15 +24,17 @@ The (ordered) keyword arguments for `brat` are
 - `fix_denominator`: whether to keep the given denominator fixed (default: `True`),
 - `increasing_order`: whether to display polynomials in increasing degree (default: `True`).
 
-*Additional notes*. The `denominator_signature` must be a dictionary whose keys are tuples of non-negative integers and whose keys are non-negative integers. If given a `denominator_signature`, the `numerator` will be used to determine the accepted ordered variables. [We do this by looking to its parent ring if `numerator` is a polynomial, or at the variables present if a symbolic expression.] Examples of acceptable `denominator_signature` are given below.
+*Additional notes*. The `denominator_signature` must be a dictionary whose keys are tuples of non-negative integers and whose keys are non-negative integers. If given a `denominator_signature`, the `numerator` will be used to determine the accepted ordered variables. [We do this by looking to its parent ring if `numerator` is a polynomial, or at the variables present if a symbolic expression.] Examples of acceptable `denominator_signature` are given in [Example 3](#example-3) and in the [denominator_signature](brat-methods.md#denominator_signature) method.
 
-### Algebraic operations and relations
+## Algebraic operations and relations
 
 One can use the usual algebraic operations with `brat`: add, subtract, multiply, divide (i.e. 'true' divide), powers. The Boolean relations `==` and `!=` can also be used. When adding a `brat` with something else, we attempt to make another `brat` object. To "opt out", use the method `rational_function`. 
 
 **Warning:** we cannot do anything about algebraic operations where the first object is *not* a `brat` object. For example, if `F` is a `brat` but `G` is a polynomial in SageMath, then `G + F` may raise errors, while `F + G` will attempt to add the two objects&mdash;other errors may arise.
 
-### Examples
+---
+
+## Example 1
 
 We expression the rational function
 \[
@@ -52,7 +56,7 @@ sage: F
 (1 + x*y + x^2*y^2)/((1 - y)*(1 - x))
 ```
 
----
+## Example 2
 
 Now we write the rational function 
 \[
@@ -74,133 +78,100 @@ sage: G
 (1 + 2*t - 2*t^3 - t^4)/((1 - t)^3*(1 - t^3)*(1 - t^4))
 ```
 
-## .denominator
-
-Returns the polynomial in the denominator of the rational function. This is not necessarily reduced.
-
-## .denominator_signature
-
-Returns the dictionary signature for the denominator. The format of the dictionary is as follows. The keys are 
-
-- "monomial": rational number,
-- "factors": dictionary with keys given by vectors and values in the positive integers. 
-
-#### Example 
-
-If the variables are ordered as $(x,y,z)$ and the denominator is 
-\[ 
-	3\cdot (1 - x^2y)(1 - y^4)^3(1 - xyz)(1 - x^2)^5
-\]
-
-Then the dictionary is 
+We could instead insist that the denominator $(1 - t)(1 - t^2)(1 - t^3)(1 - t^4)$ stay fixed. 
 ```python
-{
-	"monomial": 3
-	"factors": {
-		(2, 1, 0): 1, 
-		(0, 4, 0): 3, 
-		(1, 1, 1): 1, 
-		(2, 0, 0): 5
-	}
-}
-```
-
-In nearly every situation, the monomial is absorbed to the numerator as a rational multiple. Now we do this in SageMath.
-
-```python
-sage: x, y, z = polygens(ZZ, 'x,y,z')
-sage: F = br.brat(1/(3*(1 - x^2*y)*(1 - y^4)^3*(1 - x*y*z)*(1 - x^2)^5))
-sage: F
-(1/3)/((1 - x^2)^5*(1 - x*y*z)*(1 - x^2*y)*(1 - y^4)^3)
-sage: F.denominator_signature()
-{'monomial': 1,
- 'factors': {(2, 0, 0): 5, (0, 4, 0): 3, (1, 1, 1): 1, (2, 1, 0): 1}}
-```
-
-## .increasing_order
-
-This *attribute* is set to `True` by default&mdash;unless it was set to `False` upon construction. This can be toggled to either `True` or `False`. It will affect the print out and the `.latex` method.
-
-## .invert_variables
-
-Returns the corresponding `brat` after inverting all of the variables and then rewriting the rational function so that all exponents are non-negative. 
-
-## .latex 
-
-Returns a string that formats the `brat` in $\LaTeX$ in the `'\dfrac{...}{...}'` format.
-
-Additional argument:
-
-- `split`: If true, returns a pair of strings formatted in $\LaTeX$: the first is the numerator and the second is the denominator. Default: `False`.
-
-#### Example
-
-We obtain a $\LaTeX$ formatting of the following rational function:
-\[ 
-	\dfrac{1 + 2t + 4t^2 + 4t^3 + 2t^4 + t^5}{\prod_{i=1}^5(1 - t^i)} . 
-\]
-
-```python
-sage: t = var('t')
-sage: F = br.brat(
-	numerator=1 + 2*t + 4*t^2 + 4*t^3 + 2*t^4 + t^5,
-	denominator=prod(1 - t^i for i in range(1, 6))
+sage: G = br.brat(
+	numerator=1 + 4*t + 6*t^2 + 4*t^3 + t^4,
+	denominator=(1 - t)*(1 - t^2)*(1 - t^3)*(1 - t^4)
 )
-sage: F
-(1 + t + 3*t^2 + t^3 + t^4)/((1 - t)^2*(1 - t^3)*(1 - t^4)*(1 - t^5))
-sage: F.latex()
-'\\dfrac{1 + t + 3 t^{2} + t^{3} + t^{4}}{(1 - t)^{2}(1 - t^{3})(1 - t^{4})(1 - t^{5})}'
+sage: G
+(1 + 4*t + 6*t^2 + 4*t^3 + t^4)/((1 - t)*(1 - t^2)*(1 - t^3)*(1 - t^4))
 ```
 
-## .numerator
+By default, `fix_denominator` is set to `True`. Setting this to `False` yields the following.
+```python
+sage: br.brat(
+	numerator=1 + 4*t + 6*t^2 + 4*t^3 + t^4,
+	denominator=(1 - t)*(1 - t^2)*(1 - t^3)*(1 - t^4),
+	fix_denominator=False
+)
+(1 + 2*t - 2*t^3 - t^4)/((1 - t)^3*(1 - t^3)*(1 - t^4))
+```
 
-Returns the polynomial in the numerator of the rational function. This is not necessarily reduced.
+## Example 3
 
-## .rational_function
-
-Returns the reduced rational function. The underlying type of this object is not a `brat`. 
-
-This method should be used if you do not want SageMath to convert to a `brat` after applying operations to the rational function.
-
-## .fix_denominator
-
-Given a polynomial&mdash;or data equivalent to a polynomial (see arguments)&mdash;returns a new `brat`, equal to the original, whose denominator is the given polynomial.
-
-(Ordered) keyword arguments:
-
-- `expression`: the polynomial expression. Default: `None`.
-- `signature`: the signature for the polynomial expression. See [denominator signature](#denominator_signature) method. Default: `None`.
-
-## .subs
-
-Given a dictionary of the desired substitutions, return the new `brat` obtained by performing the substitutions. 
-
-This works in the same as the `subs` method for rational functions in SageMath. 
-
-## .variables
-
-Returns the variables used in the brat. These are polynomial variables rather than symbolic variables. 
-
-#### Example 
-
-We define the following rational function using symbolic variables
-\[ 
-	f(x,y,z) = \dfrac{1 + x^2y^2z^2}{(1 - xy)(1 - xz)(1 - yz)}
+We construct the following rational function using a signature:
+\[
+	h = \dfrac{1}{(1 - X_1)(1 - X_2)^3(1 - X_1X_2X_3)^4(1 - X_1X_2X_3^2)}.
 \]
 
 ```python
-sage: x, y, z = var('x y z')
-sage: f = (1 + x^2*y^2*z^2)/((1 - x*y)*(1 - x*z)*(1 - y*z))
-sage: F = br.brat(f)
-sage: F
-(1 + x^2*y^2*z^2)/((1 - y*z)*(1 - x*z)*(1 - x*y))
+sage: R = PolynomialRing(QQ, 'X1,X2,X3')
+sage: H = br.brat(
+	numerator=R(1),
+	denominator_signature={
+		(1, 0, 0): 1, 
+		(0, 1, 0): 3,
+		(1, 1, 1): 4,
+		(1, 1, 2): 1
+	}
+)
+sage: H
+1/((1 - X1)*(1 - X2)^3*(1 - X1*X2*X3)^4*(1 - X1*X2*X3^2))
 ```
 
-We extract the variables and note that the type of variables have changed to be polynomial variables. 
+We can also make the monomial in the signature explicit (and different from $1$).
 ```python
-sage: varbs = F.variables()
-sage: varbs
-(x, y, z)
-sage: type(varbs[0])
-<class 'sage.rings.polynomial.multi_polynomial_libsingular.MPolynomial_libsingular'>
+sage: H = br.brat(
+	numerator=R(1),
+	denominator_signature={
+		"monomial": 3,
+		"factors": {
+			(1, 0, 0): 1, 
+			(0, 1, 0): 3,
+			(1, 1, 1): 4,
+			(1, 1, 2): 1
+		}
+	}
+)
+sage: H
+1/(3*(1 - X1)*(1 - X2)^3*(1 - X1*X2*X3)^4*(1 - X1*X2*X3^2))
+```
+
+## Example 4
+
+We construct the following rational function a few different ways:
+\[ 
+	P(T) = \dfrac{1 + 6T + 11T^2 + 6T^3}{(1 - T^4)}. 
+\]
+
+```python
+sage: T = polygens(QQ, 'T')[0]
+sage: P = br.brat((1 + 6*T + 11*T^2 + 6*T^3)/(1 - T^4))
+sage: P
+(1 + 5*T + 5*T^2 - 5*T^3 - 6*T^4)/((1 - T)*(1 - T^4))
+```
+
+By doing the above construction, we added a factor of $1-T$. This is because SageMath automatically removes common factors in the numerator and denominator of the quotient `(1 + 6*T + 11*T^2 + 6*T^3)/(1 - T^4)`. The resulting denominator is $(T - 1)(T^2 + 1)$.
+
+```python
+sage: P = br.brat(
+	numerator=1 + 6*T + 11*T^2 + 6*T^3,
+	denominator=(1 - T)^4
+)
+sage: P
+(1 + 6*T + 11*T^2 + 6*T^3)/(1 - T)^4
+```
+
+By separating the denominator (and fixing it by default), we get the desired expression. 
+
+We can also switch the order of how polynomials are displayed. Instead of displaying the terms in a weakly increasing-degree sequence, we can make it weakly decreasing.
+```python
+sage: P = br.brat(
+	numerator=1 + 6*T + 11*T^2 + 6*T^3,
+	denominator=(1 - T)^4,
+	increasing_order=False
+)
+sage: P
+(6*T^3 + 11*T^2 + 6*T + 1)/(1 - T)^4
 ```

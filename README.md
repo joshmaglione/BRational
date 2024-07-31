@@ -1,5 +1,5 @@
-# brational
+# BRational
 A SageMath package to beautifully format a class of rational functions.
 
-Version: 0.2.0
+Version: 0.3.0
 [Documentation](https://joshmaglione.com/BRational/)

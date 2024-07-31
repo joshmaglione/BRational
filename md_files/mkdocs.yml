@@ -4,6 +4,7 @@ copyright: "&copy; 2024 J. Maglione"
 nav:
     - Home: index.md
     - brat: brat.md
+    - Methods (brat): brat-methods.md
 theme:
     name: mkdocs
     custom_dir: custom_theme/
