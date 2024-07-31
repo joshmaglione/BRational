@@ -39,6 +39,9 @@
                             <li class="navitem active">
                                 <a href="./" class="nav-link">brat</a>
                             </li>
+                            <li class="navitem">
+                                <a href="../brat-methods/" class="nav-link">Methods (brat)</a>
+                            </li>
                         </ul>
 
                     <ul class="nav navbar-nav ml-auto">
@@ -47,16 +50,19 @@
                                 <i class="fa fa-search"></i> Search
                             </a>
                         </li>
-                            <li class="nav-item">
+
+                      <!-- -->
+                            <!-- <li class="nav-item">
                                 <a rel="prev" href=".." class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
-                            </li>
-                            <li class="nav-item">
-                                <a rel="next" class="nav-link disabled">
+                            </li> -->
+                            <!-- <li class="nav-item">
+                                <a rel="next" href="../brat-methods/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
-                            </li>
+                            </li> -->
+                        <!-- -->
                     </ul>
                 </div>
             </div>
@@ -77,43 +83,23 @@
             
             <li class="nav-item" data-level="1"><a href="#brat" class="nav-link">brat</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-level="2"><a href="#denominator" class="nav-link">.denominator</a>
+            <li class="nav-item" data-level="2"><a href="#algebraic-operations-and-relations" class="nav-link">Algebraic operations and relations</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#denominator_signature" class="nav-link">.denominator_signature</a>
+            <li class="nav-item" data-level="2"><a href="#example-1" class="nav-link">Example 1</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#invert_variables" class="nav-link">.invert_variables</a>
+            <li class="nav-item" data-level="2"><a href="#example-2" class="nav-link">Example 2</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#latex" class="nav-link">.latex</a>
+            <li class="nav-item" data-level="2"><a href="#example-3" class="nav-link">Example 3</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#numerator" class="nav-link">.numerator</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#rational_function" class="nav-link">.rational_function</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#set_denominator" class="nav-link">.set_denominator</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#subs" class="nav-link">.subs</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#top_bottom_multiply" class="nav-link">.top_bottom_multiply</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#variables" class="nav-link">.variables</a>
+            <li class="nav-item" data-level="2"><a href="#example-4" class="nav-link">Example 4</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -132,20 +118,27 @@
 <p>where the following hold:</p>
 <ul>
 <li>$\bm{X}=(X_1, \dots, X_n)$ are variables,</li>
-<li>$F(\bm{X})\in \mathbb{Q}[\bm{X}]$,</li>
-<li>$C\in \mathbb{Q}$, </li>
+<li>$F(\bm{X})\in \mathbb{Z}[\bm{X}]$,</li>
+<li>$C\in \mathbb{Z}$, </li>
 <li>$m\in\N_0$, </li>
 <li>$\alpha_i\in\N_0^n$, where $\bm{X}^{\alpha_i} = X_1^{\alpha_{i,1}}\cdots X_n^{\alpha_{i,n}}$.</li>
 </ul>
+<p>The rules are sometimes bent in fortunate circumstances, for example $C$ might be a monomial in $\mathbb{Z}[\bm{X}]$. The above assumption is the minimal <strong>main assumption</strong>.</p>
 <p>The (ordered) keyword arguments for <code>brat</code> are</p>
 <ul>
-<li><code>rational_expression</code>: the rational function,</li>
-<li><code>numerator</code>: the numerator polynomial of the rational function,</li>
-<li><code>denominator</code>: the denominator polynomial of the rational function.</li>
+<li><code>rational_expression</code>: the rational function (default: <code>None</code>),</li>
+<li><code>numerator</code>: the numerator polynomial of the rational function (default: <code>None</code>),</li>
+<li><code>denominator</code>: the denominator polynomial of the rational function (default: <code>None</code>),</li>
+<li><code>denominator_signature</code>: the dictionary of data for the denominator (default: <code>None</code>),</li>
+<li><code>fix_denominator</code>: whether to keep the given denominator fixed (default: <code>True</code>),</li>
+<li><code>increasing_order</code>: whether to display polynomials in increasing degree (default: <code>True</code>).</li>
 </ul>
-<p>Upon construction of a <code>brat</code>, the rational function is simplified.  </p>
-<p>One can use the usual algebraic operations with <code>brat</code>. When adding a <code>brat</code> with something else, we attempt to make another <code>brat</code> object. To "opt out", use the method <code>rational_function</code>.</p>
-<h3 id="examples">Examples</h3>
+<p><em>Additional notes</em>. The <code>denominator_signature</code> must be a dictionary whose keys are tuples of non-negative integers and whose keys are non-negative integers. If given a <code>denominator_signature</code>, the <code>numerator</code> will be used to determine the accepted ordered variables. [We do this by looking to its parent ring if <code>numerator</code> is a polynomial, or at the variables present if a symbolic expression.] Examples of acceptable <code>denominator_signature</code> are given in <a href="#example-3">Example 3</a> and in the <a href="../brat-methods/#denominator_signature">denominator_signature</a> method.</p>
+<h2 id="algebraic-operations-and-relations">Algebraic operations and relations</h2>
+<p>One can use the usual algebraic operations with <code>brat</code>: add, subtract, multiply, divide (i.e. 'true' divide), powers. The Boolean relations <code>==</code> and <code>!=</code> can also be used. When adding a <code>brat</code> with something else, we attempt to make another <code>brat</code> object. To "opt out", use the method <code>rational_function</code>. </p>
+<p><strong>Warning:</strong> we cannot do anything about algebraic operations where the first object is <em>not</em> a <code>brat</code> object. For example, if <code>F</code> is a <code>brat</code> but <code>G</code> is a polynomial in SageMath, then <code>G + F</code> may raise errors, while <code>F + G</code> will attempt to add the two objects&mdash;other errors may arise.</p>
+<hr />
+<h2 id="example-1">Example 1</h2>
 <p>We expression the rational function
 [
     f(x,y)=\dfrac{1 + xy + x^2y^2}{(1 - x)(1 - y)}.
@@ -161,7 +154,7 @@ sage: f
 sage: F
 (1 + x*y + x^2*y^2)/((1 - y)*(1 - x))
 </code></pre>
-<hr />
+<h2 id="example-2">Example 2</h2>
 <p>Now we write the rational function 
 [
     g(t) = \dfrac{1 + 4t + 6t^2 + 4t^3 + t^4}{(1 - t)(1 - t^2)(1 - t^3)(1 - t^4)} . 
@@ -176,100 +169,83 @@ sage: g
 sage: G
 (1 + 2*t - 2*t^3 - t^4)/((1 - t)^3*(1 - t^3)*(1 - t^4))
 </code></pre>
-<h2 id="denominator">.denominator</h2>
-<p>Returns the polynomial in the denominator of the rational function. This is not necessarily reduced.</p>
-<h2 id="denominator_signature">.denominator_signature</h2>
-<p>Returns the dictionary signature for the denominator. The format of the dictionary is as follows. The keys are </p>
-<ul>
-<li>"monomial": rational number,</li>
-<li>"factors": dictionary with keys given by vectors and values in the positive integers. </li>
-</ul>
-<h4 id="example">Example</h4>
-<p>If the variables are ordered as $(x,y,z)$ and the denominator is 
-[ 
-    3\cdot (1 - x^2y)(1 - y^4)^3(1 - xyz)(1 - x^2)^5
-]</p>
-<p>Then the dictionary is </p>
-<pre><code class="language-python">{
-    &quot;monomial&quot;: 3
-    &quot;factors&quot;: {
-        (2, 1, 0): 1, 
-        (0, 4, 0): 3, 
-        (1, 1, 1): 1, 
-        (2, 0, 0): 5
-    }
-}
-</code></pre>
-<p>In nearly every situation, the monomial is absorbed to the numerator as a rational multiple. Now we do this in SageMath.</p>
-<pre><code class="language-python">sage: x, y, z = polygens(ZZ, 'x,y,z')
-sage: F = br.brat(1/(3*(1 - x^2*y)*(1 - y^4)^3*(1 - x*y*z)*(1 - x^2)^5))
-sage: F
-(1/3)/((1 - x^2)^5*(1 - x*y*z)*(1 - x^2*y)*(1 - y^4)^3)
-sage: F.denominator_signature()
-{'monomial': 1,
- 'factors': {(2, 0, 0): 5, (0, 4, 0): 3, (1, 1, 1): 1, (2, 1, 0): 1}}
-</code></pre>
-<h2 id="invert_variables">.invert_variables</h2>
-<p>Returns the corresponding <code>brat</code> after inverting all of the variables and then rewriting the rational function so that all exponents are non-negative. </p>
-<h2 id="latex">.latex</h2>
-<p>Returns a string that formats the <code>brat</code> in $\LaTeX$ in the <code>'\dfrac{...}{...}'</code> format.</p>
-<p>Additional argument:</p>
-<ul>
-<li><code>split</code>: If true, returns a pair of strings formatted in $\LaTeX$: the first is the numerator and the second is the denominator. Default: <code>False</code>.</li>
-</ul>
-<h4 id="example_1">Example</h4>
-<p>We obtain a $\LaTeX$ formatting of the following rational function:
-[ 
-    \dfrac{1 + 2t + 4t^2 + 4t^3 + 2t^4 + t^5}{\prod_{i=1}^5(1 - t^i)} . 
-]</p>
-<pre><code class="language-python">sage: t = var('t')
-sage: F = br.brat(
-    numerator=1 + 2*t + 4*t^2 + 4*t^3 + 2*t^4 + t^5,
-    denominator=prod(1 - t^i for i in range(1, 6))
+<p>We could instead insist that the denominator $(1 - t)(1 - t^2)(1 - t^3)(1 - t^4)$ stay fixed. </p>
+<pre><code class="language-python">sage: G = br.brat(
+    numerator=1 + 4*t + 6*t^2 + 4*t^3 + t^4,
+    denominator=(1 - t)*(1 - t^2)*(1 - t^3)*(1 - t^4)
 )
-sage: F
-(1 + t + 3*t^2 + t^3 + t^4)/((1 - t)^2*(1 - t^3)*(1 - t^4)*(1 - t^5))
-sage: F.latex()
-'\\dfrac{1 + t + 3 t^{2} + t^{3} + t^{4}}{(1 - t)^{2}(1 - t^{3})(1 - t^{4})(1 - t^{5})}'
+sage: G
+(1 + 4*t + 6*t^2 + 4*t^3 + t^4)/((1 - t)*(1 - t^2)*(1 - t^3)*(1 - t^4))
 </code></pre>
-<h2 id="numerator">.numerator</h2>
-<p>Returns the polynomial in the numerator of the rational function. This is not necessarily reduced.</p>
-<h2 id="rational_function">.rational_function</h2>
-<p>Returns the reduced rational function. The underlying type of this object is not a <code>brat</code>. </p>
-<p>This method should be used if you do not want SageMath to convert to a <code>brat</code> after applying operations to the rational function.</p>
-<h2 id="set_denominator">.set_denominator</h2>
-<p>Given a polynomial&mdash;or data equivalent to a polynomial (see arguments)&mdash;returns a new <code>brat</code>, equal to the original, whose denominator is the given polynomial.</p>
-<p>(Ordered) keyword arguments:</p>
-<ul>
-<li><code>expression</code>: the polynomial expression. Default: <code>None</code>.</li>
-<li><code>signature</code>: the signature for the polynomial expression. See <a href="#denominator_signature">denominator signature</a> method. Default: <code>None</code>.</li>
-</ul>
-<h2 id="subs">.subs</h2>
-<p>Given a dictionary of the desired substitutions, return the new <code>brat</code> obtained by performing the substitutions. </p>
-<p>This works in the same as the <code>subs</code> method for rational functions in SageMath. </p>
-<h2 id="top_bottom_multiply">.top_bottom_multiply</h2>
-<p>Returns a new <code>brat</code>, equal to the original, where the numerator and denominator is multiplied by the given polynomial expression. </p>
-<p>This is a specialization of the <a href="#set_denominator">set_denominator</a> method.</p>
-<h2 id="variables">.variables</h2>
-<p>Returns the variables used in the brat. These are polynomial variables rather than symbolic variables. </p>
-<p>This is an <em>attribute</em> not a method, so that arguments cannot be passed. </p>
-<h4 id="example_2">Example</h4>
-<p>We define the following rational function using symbolic variables
-[ 
-    f(x,y,z) = \dfrac{1 + x^2y^2z^2}{(1 - xy)(1 - xz)(1 - yz)}
+<p>By default, <code>fix_denominator</code> is set to <code>True</code>. Setting this to <code>False</code> yields the following.</p>
+<pre><code class="language-python">sage: br.brat(
+    numerator=1 + 4*t + 6*t^2 + 4*t^3 + t^4,
+    denominator=(1 - t)*(1 - t^2)*(1 - t^3)*(1 - t^4),
+    fix_denominator=False
+)
+(1 + 2*t - 2*t^3 - t^4)/((1 - t)^3*(1 - t^3)*(1 - t^4))
+</code></pre>
+<h2 id="example-3">Example 3</h2>
+<p>We construct the following rational function using a signature:
+[
+    h = \dfrac{1}{(1 - X_1)(1 - X_2)^3(1 - X_1X_2X_3)^4(1 - X_1X_2X_3^2)}.
 ]</p>
-<pre><code class="language-python">sage: x, y, z = var('x y z')
-sage: f = (1 + x^2*y^2*z^2)/((1 - x*y)*(1 - x*z)*(1 - y*z))
-sage: F = br.brat(f)
-sage: F
-(1 + x^2*y^2*z^2)/((1 - y*z)*(1 - x*z)*(1 - x*y))
+<pre><code class="language-python">sage: R = PolynomialRing(QQ, 'X1,X2,X3')
+sage: H = br.brat(
+    numerator=R(1),
+    denominator_signature={
+        (1, 0, 0): 1, 
+        (0, 1, 0): 3,
+        (1, 1, 1): 4,
+        (1, 1, 2): 1
+    }
+)
+sage: H
+1/((1 - X1)*(1 - X2)^3*(1 - X1*X2*X3)^4*(1 - X1*X2*X3^2))
 </code></pre>
-<p>We extract the variables and note that the type of variables have changed to be polynomial variables. </p>
-<pre><code class="language-python">sage: varbs = F.variables
-sage: varbs
-(x, y, z)
-sage: type(varbs[0])
-&lt;class 'sage.rings.polynomial.multi_polynomial_libsingular.MPolynomial_libsingular'&gt;
+<p>We can also make the monomial in the signature explicit (and different from $1$).</p>
+<pre><code class="language-python">sage: H = br.brat(
+    numerator=R(1),
+    denominator_signature={
+        &quot;monomial&quot;: 3,
+        &quot;factors&quot;: {
+            (1, 0, 0): 1, 
+            (0, 1, 0): 3,
+            (1, 1, 1): 4,
+            (1, 1, 2): 1
+        }
+    }
+)
+sage: H
+1/(3*(1 - X1)*(1 - X2)^3*(1 - X1*X2*X3)^4*(1 - X1*X2*X3^2))
+</code></pre>
+<h2 id="example-4">Example 4</h2>
+<p>We construct the following rational function a few different ways:
+[ 
+    P(T) = \dfrac{1 + 6T + 11T^2 + 6T^3}{(1 - T^4)}. 
+]</p>
+<pre><code class="language-python">sage: T = polygens(QQ, 'T')[0]
+sage: P = br.brat((1 + 6*T + 11*T^2 + 6*T^3)/(1 - T^4))
+sage: P
+(1 + 5*T + 5*T^2 - 5*T^3 - 6*T^4)/((1 - T)*(1 - T^4))
+</code></pre>
+<p>By doing the above construction, we added a factor of $1-T$. This is because SageMath automatically removes common factors in the numerator and denominator of the quotient <code>(1 + 6*T + 11*T^2 + 6*T^3)/(1 - T^4)</code>. The resulting denominator is $(T - 1)(T^2 + 1)$.</p>
+<pre><code class="language-python">sage: P = br.brat(
+    numerator=1 + 6*T + 11*T^2 + 6*T^3,
+    denominator=(1 - T)^4
+)
+sage: P
+(1 + 6*T + 11*T^2 + 6*T^3)/(1 - T)^4
+</code></pre>
+<p>By separating the denominator (and fixing it by default), we get the desired expression. </p>
+<p>We can also switch the order of how polynomials are displayed. Instead of displaying the terms in a weakly increasing-degree sequence, we can make it weakly decreasing.</p>
+<pre><code class="language-python">sage: P = br.brat(
+    numerator=1 + 6*T + 11*T^2 + 6*T^3,
+    denominator=(1 - T)^4,
+    increasing_order=False
+)
+sage: P
+(6*T^3 + 11*T^2 + 6*T + 1)/(1 - T)^4
 </code></pre></div>
             </div>
         </div>
