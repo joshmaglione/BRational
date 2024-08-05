@@ -64,6 +64,39 @@ sage: F.denominator_signature()
  'factors': {(2, 0, 0): 5, (0, 4, 0): 3, (1, 1, 1): 1, (2, 1, 0): 1}}
 ```
 
+## .fix_denominator
+
+Given a polynomial&mdash;or data equivalent to a polynomial (see arguments)&mdash;returns a new `brat`, equal to the original, whose denominator is the given polynomial.
+
+(Ordered) keyword arguments:
+
+- `expression`: the polynomial expression. Default: `None`.
+- `signature`: the signature for the polynomial expression. See [denominator signature](#denominator_signature) method. Default: `None`.
+
+### Example 
+
+We construct the following rational function:
+\[ 
+	H = \dfrac{(1 + x^3)(1 + x^4)(1 + x^5)}{(1 - x)(1 - x^2)(1 - x^3)^2(1 - x^4)(1 - x^5)}
+\]
+from a simplified expression. Then we recover this particular expression using `fix_denominator`.
+
+```python
+sage: x = polygens(QQ, 'x')[0]
+sage: h = (1 + x^3)*(1 + x^4)*(1 + x^5)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
+sage: h
+(x^10 - 2*x^9 + 3*x^8 - 3*x^7 + 4*x^6 - 4*x^5 + 4*x^4 - 3*x^3 + 3*x^2 - 2*x + 1)/(x^16 - 3*x^15 + 4*x^14 - 6*x^
+13 + 9*x^12 - 10*x^11 + 12*x^10 - 13*x^9 + 12*x^8 - 13*x^7 + 12*x^6 - 10*x^5 + 9*x^4 - 6*x^3 + 4*x^2 - 3*x + 1)
+sage: H = br.brat(h)
+sage: H
+(1 - 2*x + 2*x^2 - x^3 + x^4 - x^5 + x^7 - x^8 + x^9 - 2*x^10 + 2*x^11 - x^12)/((1 - x)^3*(1 - x^3)^2*(1 - x^4)
+*(1 - x^5))
+sage: H.fix_denominator(
+	signature={(1,): 1, (2,): 1, (3,): 2, (4,): 1, (5,): 1}
+)
+(1 + x^3 + x^4 + x^5 + x^7 + x^8 + x^9 + x^12)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
+```
+
 ## .increasing_order
 
 This is set to `True` by default&mdash;unless it was set to `False` upon construction. This can be toggled to either `True` or `False`. It will affect the print out and the `.latex` method. 
@@ -219,39 +252,6 @@ sage: f.rational_function()
 1/(-x*y^2 + 1)
 ```
 
-## .fix_denominator
-
-Given a polynomial&mdash;or data equivalent to a polynomial (see arguments)&mdash;returns a new `brat`, equal to the original, whose denominator is the given polynomial.
-
-(Ordered) keyword arguments:
-
-- `expression`: the polynomial expression. Default: `None`.
-- `signature`: the signature for the polynomial expression. See [denominator signature](#denominator_signature) method. Default: `None`.
-
-### Example 
-
-We construct the following rational function:
-\[ 
-	H = \dfrac{(1 + x^3)(1 + x^4)(1 + x^5)}{(1 - x)(1 - x^2)(1 - x^3)^2(1 - x^4)(1 - x^5)}
-\]
-from a simplified expression. Then we recover this particular expression using `fix_denominator`.
-
-```python
-sage: x = polygens(QQ, 'x')[0]
-sage: h = (1 + x^3)*(1 + x^4)*(1 + x^5)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
-sage: h
-(x^10 - 2*x^9 + 3*x^8 - 3*x^7 + 4*x^6 - 4*x^5 + 4*x^4 - 3*x^3 + 3*x^2 - 2*x + 1)/(x^16 - 3*x^15 + 4*x^14 - 6*x^
-13 + 9*x^12 - 10*x^11 + 12*x^10 - 13*x^9 + 12*x^8 - 13*x^7 + 12*x^6 - 10*x^5 + 9*x^4 - 6*x^3 + 4*x^2 - 3*x + 1)
-sage: H = br.brat(h)
-sage: H
-(1 - 2*x + 2*x^2 - x^3 + x^4 - x^5 + x^7 - x^8 + x^9 - 2*x^10 + 2*x^11 - x^12)/((1 - x)^3*(1 - x^3)^2*(1 - x^4)
-*(1 - x^5))
-sage: H.fix_denominator(
-	signature={(1,): 1, (2,): 1, (3,): 2, (4,): 1, (5,): 1}
-)
-(1 + x^3 + x^4 + x^5 + x^7 + x^8 + x^9 + x^12)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
-```
-
 ## .subs
 
 Given a dictionary of the desired substitutions, return the new `brat` obtained by performing the substitutions. 
@@ -289,7 +289,7 @@ sage: C.subs({T: T - 1})
 
 ## .variables
 
-Returns the variables used in the brat. These are polynomial variables rather than symbolic variables. 
+Returns the polynomial variables used.
 
 #### Example 
 
@@ -314,3 +314,76 @@ sage: varbs
 sage: type(varbs[0])
 <class 'sage.rings.polynomial.multi_polynomial_libsingular.MPolynomial_libsingular'>
 ```
+
+## .write_latex
+
+Writes the `brat` object to a file formatted in $\LaTeX$. The (default) output is a displayed equation (using `\[` and `\]`) of the `brat`. There are many parameters to change the format of the output.
+
+(Ordered) keyword arguments:
+
+- `filename`: the string for the output filename. Default: `None`, which will output a timestamp name of the form `%Y-%m-%d_%H-%M-%S.tex`.
+- `just_numerator`: write just the numerator. Default: `False`.
+- `just_denominator`: write just the denominator. Default: `False`.
+- `align`: format using the `align*` environment. This is especially useful for long polynomials. Default: `False`.
+- `line_width`: determines the line width in characters for each line of the `align*` environment. Only used when `align` is set to `True`. Default: `120`.
+- `function_name`: turns the expression to an equation by displaying the function name. Default: `None`.
+- `save_message`: turns on the save message at the end. Default: `True`.
+
+#### Examples
+
+We will write the following function to `test.tex` with all the other parameters set to their defaults:
+\[ 
+	\dfrac{1 + xy^2}{1 - x^2y^4}
+\]
+
+```python
+sage: x, y = polygens(QQ, 'x,y')
+sage: f = br.brat(
+	numerator=1 + x*y^2,
+	denominator=1 - x^2*y^4
+)
+sage: f
+(1 + x*y^2)/(1 - x^2*y^4)
+sage: f.write_latex('test.tex')
+File saved as test.tex.
+sage: with open('test.tex', 'r') as out_file:
+....:     print(out_file.read())
+\[
+	\dfrac{1 + x y^2}{(1 - x^2y^4)}
+\]
+```
+
+Now we write the expanded polynomial to the file `binomial.tex`:
+\[ 
+	(1 + X)^{20}
+\]
+
+Since it is just a polynomial, we will set `just_numerator` to `True`. We will also print this in an `algin` environment, leaving the `line_width` at 120 characters. 
+
+```python
+sage: X = polygens(QQ, 'X')[0]
+sage: f = br.brat((1 + X)^20)
+sage: f
+1 + 20*X + 190*X^2 + 1140*X^3 + 4845*X^4 + 15504*X^5 + 38760*X^6 + 77520*X^7 + 125970*X^8 + 167960*X^9 + 184756*X^10 + 167960*X^11 + 125970*X^12 + 77520*X^13 + 38760*X^14 + 15504*X^15 + 4845*X^16 + 1140*X^17 + 190*X^18 + 20*X^19 + X^20
+sage: f.write_latex(
+	filename="binomial.tex",
+	just_numerator=True,
+	align=True,
+	function_name="B_{20}(X)"
+)
+sage: with open("binomial.tex", "r") as output:
+....:     print(output.read())
+\begin{align*}
+	B_{20}(X) &= 1 + 20X + 190X^2 + 1140X^3 + 4845X^4 + 15504X^5 + 38760X^6 + 77520X^7 + 125970X^8 \\ 
+	&\quad + 167960X^9 + 184756X^{10} + 167960X^{11} + 125970X^{12} + 77520X^{13} + 38760X^{14} + 15504X^{15} \\ 
+	&\quad + 4845X^{16} + 1140X^{17} + 190X^{18} + 20X^{19} + X^{20}
+\end{align*}
+```
+
+The polynomial compiles to 
+
+\[\begin{aligned}
+	B_{20}(X) &= 1 + 20X + 190X^2 + 1140X^3 + 4845X^4 + 15504X^5 + 38760X^6 + 77520X^7 + 125970X^8 \\\\
+	&\quad + 167960X^9 + 184756X^{10} + 167960X^{11} + 125970X^{12} + 77520X^{13} + 38760X^{14} + 15504X^{15} \\\\
+	&\quad + 4845X^{16} + 1140X^{17} + 190X^{18} + 20X^{19} + X^{20}
+\end{aligned}\]

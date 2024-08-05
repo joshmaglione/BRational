@@ -1,5 +1,5 @@
 
-from sage.all import ZZ, SR, QQ, PolynomialRing, prod, vector
+from sage.all import ZZ, SR, QQ, PolynomialRing, prod, vector, reduce
 from sage.all import latex as LaTeX
 from .util import my_print
 
@@ -165,19 +165,19 @@ def _process_input(num, dem=None, sig=None, fix=True):
 
 def _remove_unnecessary_braces_and_spaces(latex_text):
 	import re
-	patt_braces = re.compile(r'\^\{.\}')
+	patt_braces = re.compile(r'[\^\_]\{.\}')
 	patt_spaces = re.compile(r'[0-9] [a-zA-Z0-9]')
+	patt_spaces2 = re.compile(r'\} [a-zA-Z0-9]')
 	def remove_braces(match):
-		return f"^{match.group(0)[2]}"
+		return f"{match.group(0)[0]}{match.group(0)[2]}"
 	def remove_spaces(match):
 		return match.group(0)[0] + match.group(0)[2]
-	return patt_spaces.sub(
-		remove_spaces, 
-		patt_braces.sub(
-			remove_braces, 
-			latex_text
-		)
-	)
+	pairs = [
+		(patt_braces, remove_braces), 
+		(patt_spaces, remove_spaces), 
+		(patt_spaces2, remove_spaces)
+	]
+	return reduce(lambda x, y: y[0].sub(y[1], x), pairs, latex_text)
 
 def _format(B, latex=False):
 	if latex:
@@ -232,7 +232,53 @@ def _format(B, latex=False):
 		n_str = "(" + n_str + ")"
 	return (n_str, d_str)
 
+def _format_polynomial_for_align(POLY, COLWIDTH, first=0):
+	def split_polynomial(poly):
+		terms = []
+		i = 0
+		while i < len(poly):
+			start = i
+			if poly[i] in '+-':
+				i += 1
+			while i < len(poly) and poly[i] not in '+-':
+				i += 1
+			terms.append(poly[start:i].strip())
+		return terms
+	terms = split_polynomial(POLY)
+	output_lines = []
+	current_line = ""
+	capped = lambda curr, t, extra: len(curr) + len(t) > COLWIDTH - extra
+	for term in terms:
+		if (len(output_lines) == 0 and capped(current_line, term, first)) or (len(output_lines) > 0 and capped(current_line, term, 0)):
+			if current_line:
+				output_lines.append(current_line)
+			current_line = term
+		else:
+			if current_line:
+				current_line += " " + term
+			else:
+				current_line = term
+	if current_line:
+		output_lines.append(current_line)
+	output_string = " \\\\ \n\t&\\quad ".join(output_lines)
+	return output_string
+
 class brat:
+	r"""
+	A class for beautifully formatted rational functions.
+
+	- ``rational_expression``: the rational function (default: ``None``),
+
+	- ``numerator``: the numerator polynomial of the rational function (default: ``None``),
+
+	- ``denominator``: the denominator polynomial of the rational function (default: ``None``),
+
+	- ``denominator_signature``: the dictionary of data for the denominator (default: ``None``),
+
+	- ``fix_denominator``: whether to keep the given denominator fixed (default: ``True``),
+
+	- ``increasing_order``: whether to display polynomials in increasing degree (default: ``True``).
+	"""
 
 	def __init__(self, 
 			rational_expression=None, 
@@ -347,12 +393,62 @@ class brat:
 		return not self == other
 	
 	def denominator(self):
+		r"""Returns the polynomial in the denominator of the rational function. This is not necessarily reduced.
+
+		EXAMPLE::
+
+			sage: x, y = polygens(QQ, 'x,y')
+			sage: f = br.brat(
+				numerator=1 + x*y^2,
+				denominator=1 - x^2*y^4
+			)
+			sage: f
+			(1 + x*y^2)/(1 - x^2*y^4)
+			sage: f.denominator()
+			-x^2*y^4 + 1
+		"""
 		return _unfold_signature(self._ring, self._d_sig)
 
 	def denominator_signature(self):
+		r"""Returns the dictionary signature for the denominator. The format of the dictionary is as follows. The keys are 
+
+		- ``monomial``: rational number,
+		- ``factors``: dictionary with keys given by vectors and values in the positive integers. 
+		
+		EXAMPLE::
+
+			sage: x, y, z = polygens(ZZ, 'x,y,z')
+			sage: F = br.brat(1/(3*(1 - x^2*y)*(1 - y^4)^3*(1 - x*y*z)*(1 - x^2)^5))
+			sage: F
+			1/(3*(1 - x^2)^5*(1 - x*y*z)*(1 - x^2*y)*(1 - y^4)^3)
+			sage: F.denominator_signature()
+			{'monomial': 3,
+			'factors': {(2, 0, 0): 5, (0, 4, 0): 3, (1, 1, 1): 1, (2, 1, 0): 1}}
+		"""
 		return self._d_sig
 
 	def fix_denominator(self, expression=None, signature=None):
+		r"""Given a polynomial, or data equivalent to a polynomial, returns a new ``brat``, equal to the original, whose denominator is the given polynomial.
+
+		- ``expression``: the polynomial expression. Default: ``None``.
+		- ``signature``: the signature for the polynomial expression. See the denominator signature method. Default: ``None``.
+
+		EXAMPLE::
+
+			sage: x = polygens(QQ, 'x')[0]
+			sage: h = (1 + x^3)*(1 + x^4)*(1 + x^5)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
+			sage: h
+			(x^10 - 2*x^9 + 3*x^8 - 3*x^7 + 4*x^6 - 4*x^5 + 4*x^4 - 3*x^3 + 3*x^2 - 2*x + 1)/(x^16 - 3*x^15 + 4*x^14 - 6*x^
+			13 + 9*x^12 - 10*x^11 + 12*x^10 - 13*x^9 + 12*x^8 - 13*x^7 + 12*x^6 - 10*x^5 + 9*x^4 - 6*x^3 + 4*x^2 - 3*x + 1)
+			sage: H = br.brat(h)
+			sage: H
+			(1 - 2*x + 2*x^2 - x^3 + x^4 - x^5 + x^7 - x^8 + x^9 - 2*x^10 + 2*x^11 - x^12)/((1 - x)^3*(1 - x^3)^2*(1 - x^4)
+			*(1 - x^5))
+			sage: H.fix_denominator(
+				signature={(1,): 1, (2,): 1, (3,): 2, (4,): 1, (5,): 1}
+			)
+			(1 + x^3 + x^4 + x^5 + x^7 + x^8 + x^9 + x^12)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
+		"""
 		if expression:
 			if expression == 0:
 				raise ValueError("Expression cannot be zero.")
@@ -376,6 +472,20 @@ class brat:
 		)
 
 	def invert_variables(self):
+		r"""Returns the corresponding ``brat`` after inverting all of the variables and then rewriting the rational function so that all exponents are non-negative. 
+		
+		EXAMPLE::
+
+			sage: T = var('T')
+			sage: E = br.brat(
+				numerator=1 + 26*T + 66*T^2 + 26*T^3 + T^4,
+				denominator_signature={(1,): 5}
+			)
+			sage: E
+			(1 + 26*T + 66*T^2 + 26*T^3 + T^4)/(1 - T)^5
+			sage: E.invert_variables()
+			(-T - 26*T^2 - 66*T^3 - 26*T^4 - T^5)/(1 - T)^5
+		"""
 		varbs = self._ring.gens()
 		mon = lambda v: self._ring(prod(x**e for x, e in zip(varbs, v)))
 		factor = prod(
@@ -391,6 +501,27 @@ class brat:
 		return N/self.denominator()
 
 	def latex(self, split=False):
+		r"""Returns a string that formats the ``brat` `in LaTeX in the ``\dfrac{...}{...}`` format.
+
+		Additional argument:
+
+		- ``split``: If true, returns a pair of strings formatted in LaTeX: the first is the numerator and the second is the denominator. Default: ``False``.
+
+		EXAMPLE::
+
+			sage: t = var('t')
+			sage: F = br.brat(
+				numerator=1 + 2*t^2 + 4*t^4 + 4*t^6 + 2*t^8 + t^10,
+				denominator=prod(1 - t^i for i in range(1, 6))
+			)
+			sage: F
+			(1 + 2*t^2 + 4*t^4 + 4*t^6 + 2*t^8 + t^10)/((1 - t)*(1 - t^2)*(1 - t^3)*(1 - t^4)*(1 - t^5))
+			sage: F.latex()
+			'\\dfrac{1 + 2t^2 + 4t^4 + 4t^6 + 2t^8 + t^{10}}{(1 - t)(1 - t^2)(1 - t^3)(1 - t^4)(1 - t^5)}'
+			sage: F.latex(split=True)
+			('1 + 2t^2 + 4t^4 + 4t^6 + 2t^8 + t^{10}',
+			'(1 - t)(1 - t^2)(1 - t^3)(1 - t^4)(1 - t^5)')
+		"""
 		N, D = _format(self, latex=True)
 		N_clean = _remove_unnecessary_braces_and_spaces(N)
 		D_clean = _remove_unnecessary_braces_and_spaces(D)
@@ -399,12 +530,56 @@ class brat:
 		return f"\\dfrac{{{N_clean}}}{{{D_clean}}}"
 	
 	def numerator(self):
+			r"""Returns the polynomial in the numerator of the rational function. This is not necessarily reduced.
+
+			EXAMPLE::
+
+				sage: x, y = polygens(QQ, 'x,y')
+				sage: f = br.brat(
+					numerator=1 + x*y^2,
+					denominator=1 - x^2*y^4
+				)
+				sage: f
+				(1 + x*y^2)/(1 - x^2*y^4)
+				sage: f.numerator()
+				x*y^2 + 1
+			"""
 			return self._n_poly
 		
 	def rational_function(self):
+		r"""Returns the reduced rational function. The underlying type of this object is not a ``brat``.
+
+		EXAMPLE::
+
+			sage: x, y = polygens(QQ, 'x,y')
+			sage: f = br.brat(
+				numerator=1 + x*y^2,
+				denominator=1 - x^2*y^4
+			)
+			sage: f
+			(1 + x*y^2)/(1 - x^2*y^4)
+			sage: f.rational_function()
+			1/(-x*y^2 + 1) 
+		"""
 		return self._n_poly / self.denominator()
 	
 	def subs(self, S:dict):
+		r"""Given a dictionary of the desired substitutions, return the new ``brat`` obtained by performing the substitutions. 
+
+		This works in the same as the ``subs`` method for rational functions in SageMath. 
+
+		EXAMPLE::
+
+			sage: Y, T = polygens(QQ, 'Y,T')
+			sage: C = br.brat(
+				numerator=1 + 3*Y + 2*Y^2 + (2 + 3*Y + Y^2)*T,
+				denominator_signature={(0,1): 2}
+			)
+			sage: C
+			(1 + 2*T + 3*Y + 3*Y*T + 2*Y^2 + Y^2*T)/(1 - T)^2
+			sage: C.subs({Y: 0})
+			(1 + 2*T)/(1 - T)^2
+		"""
 		R = self.rational_function()
 		Q = R.subs(S)
 		try:
@@ -413,4 +588,103 @@ class brat:
 			return Q
 
 	def variables(self):
+		r"""Returns the polynomial variables used.
+
+		EXAMPLE::
+
+			sage: x, y, z = var('x y z')
+			sage: f = (1 + x^2*y^2*z^2)/((1 - x*y)*(1 - x*z)*(1 - y*z))
+			sage: F = br.brat(f)
+			sage: F
+			(1 + x^2*y^2*z^2)/((1 - y*z)*(1 - x*z)*(1 - x*y))
+			sage: F.variables()
+			(x, y, z)
+		"""
 		return self._ring.gens()
+	
+	def write_latex(
+			self,
+			filename=None,
+			just_numerator=False,
+			just_denominator=False,
+			align=False,
+			line_width=100,
+			function_name=None,
+			save_message=True
+		):
+		r"""Writes the ``brat`` object to a file formatted in LaTeX. The (default) output is a displayed equation (using ``\[`` and ``\]``) of the ``brat``. There are many parameters to change the format of the output.
+
+		- ``filename``: the string for the output filename. Default: ``None``, which will output a timestamp name of the form ``%Y-%m-%d_%H-%M-%S.tex``.
+		- ``just_numerator``: write just the numerator. Default: ``False``.
+		- ``just_denominator``: write just the denominator. Default: ``False``.
+		- ``align``: format using the ``align*`` environment. This is especially useful for long polynomials. Default: ``False``.
+		- ``line_width``: determines the line width in characters for each line of the ``align*`` environment. Only used when ``align`` is set to ``True``. Default: ``120``.
+		- ``function_name``: turns the expression to an equation by displaying the function name. Default: ``None``.
+		- ``save_message``: turns on the save message at the end. Default: ``True``.
+
+		EXAMPLES::
+
+			sage: x, y = polygens(QQ, 'x,y')
+			sage: f = br.brat(
+				numerator=1 + x*y^2,
+				denominator=1 - x^2*y^4
+			)
+			sage: f
+			(1 + x*y^2)/(1 - x^2*y^4)
+			sage: f.write_latex('test.tex')
+			File saved as test.tex.
+			sage: with open('test.tex', 'r') as out_file:
+			....:     print(out_file.read())
+			\[
+				\dfrac{1 + x y^2}{(1 - x^2y^4)}
+			\]
+
+			sage: X = polygens(QQ, 'X')[0]
+			sage: f = br.brat((1 + X)^20)
+			sage: f
+			1 + 20*X + 190*X^2 + 1140*X^3 + 4845*X^4 + 15504*X^5 + 38760*X^6 + 77520*X^7 + 125970*X^8 + 167960*X^9 + 184756*X^10 + 167960*X^11 + 125970*X^12 + 77520*X^13 + 38760*X^14 + 15504*X^15 + 4845*X^16 + 1140*X^17 + 190*X^18 + 20*X^19 + X^20
+			sage: f.write_latex(
+				filename="binomial.tex",
+				just_numerator=True,
+				align=True,
+				function_name="B_{20}(X)"
+			)
+			sage: with open("binomial.tex", "r") as output:
+			....:     print(output.read())
+			\begin{align*}
+				B_{20}(X) &= 1 + 20X + 190X^2 + 1140X^3 + 4845X^4 + 15504X^5 + 38760X^6 + 77520X^7 + 125970X^8 \\ 
+				&\quad + 167960X^9 + 184756X^{10} + 167960X^{11} + 125970X^{12} + 77520X^{13} + 38760X^{14} + 15504X^{15} \\ 
+				&\quad + 4845X^{16} + 1140X^{17} + 190X^{18} + 20X^{19} + X^{20}
+			\end{align*}
+		"""
+		from datetime import datetime
+		if filename is None:
+			filename = datetime.now().strftime('%Y-%m-%d_%H-%M-%S.tex')
+		if just_numerator and just_denominator:
+			raise ValueError("'just_numerator' and 'just_denominator' cannot both be True.")
+		if line_width < 60:
+			raise ValueError("line width must be at least 60.")
+		if just_numerator:
+			func = self.latex(split=True)[0]
+		elif just_denominator:
+			func = self.latex(split=True)[1]
+		else:
+			func = self.latex()
+			align = False
+		if not function_name is None:
+			if align:
+				function_name = f"{function_name} &= "
+			else:
+				function_name = f"{function_name} = "
+		else:
+			function_name = ""
+		if align:
+			func = _format_polynomial_for_align(func, line_width, first=len(function_name))
+			output = f"\\begin{{align*}}\n\t{function_name}{func}\n\\end{{align*}}"
+		else:
+			output = f"\\[\n\t{function_name}{func}\n\\]"
+		with open(filename, "w") as f:
+			f.write(output)
+		if save_message:
+			print(f"File saved as {filename}.")
+		return None
