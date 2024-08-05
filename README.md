@@ -8,9 +8,8 @@ Version: 1.0.0
 ---
 
 The default expression for 
-\[ 
-	\dfrac{1 + 26T + 66T^2 + 26T^3 + T^4}{(1 - T)^5}
-\]
+
+$$\dfrac{1 + 26T + 66T^2 + 26T^3 + T^4}{(1 - T)^5}$$
 
 in SageMath is 
 ```python
