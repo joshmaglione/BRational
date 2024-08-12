@@ -91,6 +91,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#fix_denominator" class="nav-link">.fix_denominator</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-level="2"><a href="#increasing_order" class="nav-link">.increasing_order</a>
               <ul class="nav flex-column">
               </ul>
@@ -111,15 +115,15 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#fix_denominator" class="nav-link">.fix_denominator</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
             <li class="nav-item" data-level="2"><a href="#subs" class="nav-link">.subs</a>
               <ul class="nav flex-column">
               </ul>
             </li>
             <li class="nav-item" data-level="2"><a href="#variables" class="nav-link">.variables</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#write_latex" class="nav-link">.write_latex</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -180,10 +184,37 @@ sage: F.denominator_signature()
 {'monomial': 3,
  'factors': {(2, 0, 0): 5, (0, 4, 0): 3, (1, 1, 1): 1, (2, 1, 0): 1}}
 </code></pre>
+<h2 id="fix_denominator">.fix_denominator</h2>
+<p>Given a polynomial&mdash;or data equivalent to a polynomial (see arguments)&mdash;returns a new <code>brat</code>, equal to the original, whose denominator is the given polynomial.</p>
+<p>(Ordered) keyword arguments:</p>
+<ul>
+<li><code>expression</code>: the polynomial expression. Default: <code>None</code>.</li>
+<li><code>signature</code>: the signature for the polynomial expression. See <a href="#denominator_signature">denominator signature</a> method. Default: <code>None</code>.</li>
+</ul>
+<h3 id="example_2">Example</h3>
+<p>We construct the following rational function:
+[ 
+    H = \dfrac{(1 + x^3)(1 + x^4)(1 + x^5)}{(1 - x)(1 - x^2)(1 - x^3)^2(1 - x^4)(1 - x^5)}
+]
+from a simplified expression. Then we recover this particular expression using <code>fix_denominator</code>.</p>
+<pre><code class="language-python">sage: x = polygens(QQ, 'x')[0]
+sage: h = (1 + x^3)*(1 + x^4)*(1 + x^5)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
+sage: h
+(x^10 - 2*x^9 + 3*x^8 - 3*x^7 + 4*x^6 - 4*x^5 + 4*x^4 - 3*x^3 + 3*x^2 - 2*x + 1)/(x^16 - 3*x^15 + 4*x^14 - 6*x^
+13 + 9*x^12 - 10*x^11 + 12*x^10 - 13*x^9 + 12*x^8 - 13*x^7 + 12*x^6 - 10*x^5 + 9*x^4 - 6*x^3 + 4*x^2 - 3*x + 1)
+sage: H = br.brat(h)
+sage: H
+(1 - 2*x + 2*x^2 - x^3 + x^4 - x^5 + x^7 - x^8 + x^9 - 2*x^10 + 2*x^11 - x^12)/((1 - x)^3*(1 - x^3)^2*(1 - x^4)
+*(1 - x^5))
+sage: H.fix_denominator(
+    signature={(1,): 1, (2,): 1, (3,): 2, (4,): 1, (5,): 1}
+)
+(1 + x^3 + x^4 + x^5 + x^7 + x^8 + x^9 + x^12)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
+</code></pre>
 <h2 id="increasing_order">.increasing_order</h2>
 <p>This is set to <code>True</code> by default&mdash;unless it was set to <code>False</code> upon construction. This can be toggled to either <code>True</code> or <code>False</code>. It will affect the print out and the <code>.latex</code> method. </p>
 <p>This is an <em>attribute</em> and not a method like the rest of the functions on this page. This means it is called without parentheses </p>
-<h3 id="example_2">Example</h3>
+<h3 id="example_3">Example</h3>
 <p>We construct the following polynomial and then switch the display order:
 [ 
     h = t^3 - 6t^2 + 11t - 6.
@@ -239,7 +270,7 @@ False
 <ul>
 <li><code>split</code>: If true, returns a pair of strings formatted in $\LaTeX$: the first is the numerator and the second is the denominator. Default: <code>False</code>.</li>
 </ul>
-<h4 id="example_3">Example</h4>
+<h4 id="example_4">Example</h4>
 <p>We obtain a $\LaTeX$ formatting of the following rational function:
 [ 
     \dfrac{1 + 2t^2 + 4t^4 + 4t^6 + 2t^8 + t^{10}}{\prod_{i=1}^5(1 - t^i)} . 
@@ -261,7 +292,7 @@ sage: F.latex()
 </code></pre>
 <h2 id="numerator">.numerator</h2>
 <p>Returns the polynomial in the numerator of the rational function. This is not necessarily reduced.</p>
-<h3 id="example_4">Example</h3>
+<h3 id="example_5">Example</h3>
 <p>We build a <code>brat</code> for the following rational function and extract the numerator:
 [ 
     f(x,y) = \dfrac{1 + xy^2}{1 - x^2y^4}. 
@@ -279,7 +310,7 @@ x*y^2 + 1
 <h2 id="rational_function">.rational_function</h2>
 <p>Returns the reduced rational function. The underlying type of this object is not a <code>brat</code>. </p>
 <p>This method should be used if you do not want SageMath to convert to a <code>brat</code> after applying operations to the rational function.</p>
-<h3 id="example_5">Example</h3>
+<h3 id="example_6">Example</h3>
 <p>We build a <code>brat</code> for the following rational function and extract the rational function:
 [ 
     f(x,y) = \dfrac{1 + xy^2}{1 - x^2y^4}. 
@@ -293,33 +324,6 @@ sage: f
 (1 + x*y^2)/(1 - x^2*y^4)
 sage: f.rational_function()
 1/(-x*y^2 + 1)
-</code></pre>
-<h2 id="fix_denominator">.fix_denominator</h2>
-<p>Given a polynomial&mdash;or data equivalent to a polynomial (see arguments)&mdash;returns a new <code>brat</code>, equal to the original, whose denominator is the given polynomial.</p>
-<p>(Ordered) keyword arguments:</p>
-<ul>
-<li><code>expression</code>: the polynomial expression. Default: <code>None</code>.</li>
-<li><code>signature</code>: the signature for the polynomial expression. See <a href="#denominator_signature">denominator signature</a> method. Default: <code>None</code>.</li>
-</ul>
-<h3 id="example_6">Example</h3>
-<p>We construct the following rational function:
-[ 
-    H = \dfrac{(1 + x^3)(1 + x^4)(1 + x^5)}{(1 - x)(1 - x^2)(1 - x^3)^2(1 - x^4)(1 - x^5)}
-]
-from a simplified expression. Then we recover this particular expression using <code>fix_denominator</code>.</p>
-<pre><code class="language-python">sage: x = polygens(QQ, 'x')[0]
-sage: h = (1 + x^3)*(1 + x^4)*(1 + x^5)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
-sage: h
-(x^10 - 2*x^9 + 3*x^8 - 3*x^7 + 4*x^6 - 4*x^5 + 4*x^4 - 3*x^3 + 3*x^2 - 2*x + 1)/(x^16 - 3*x^15 + 4*x^14 - 6*x^
-13 + 9*x^12 - 10*x^11 + 12*x^10 - 13*x^9 + 12*x^8 - 13*x^7 + 12*x^6 - 10*x^5 + 9*x^4 - 6*x^3 + 4*x^2 - 3*x + 1)
-sage: H = br.brat(h)
-sage: H
-(1 - 2*x + 2*x^2 - x^3 + x^4 - x^5 + x^7 - x^8 + x^9 - 2*x^10 + 2*x^11 - x^12)/((1 - x)^3*(1 - x^3)^2*(1 - x^4)
-*(1 - x^5))
-sage: H.fix_denominator(
-    signature={(1,): 1, (2,): 1, (3,): 2, (4,): 1, (5,): 1}
-)
-(1 + x^3 + x^4 + x^5 + x^7 + x^8 + x^9 + x^12)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
 </code></pre>
 <h2 id="subs">.subs</h2>
 <p>Given a dictionary of the desired substitutions, return the new <code>brat</code> obtained by performing the substitutions. </p>
@@ -346,7 +350,7 @@ sage: C
 (Y^2*T + Y^2 + 3*Y*T + 2*T - 1)/(T^2 - 4*T + 4)
 </code></pre>
 <h2 id="variables">.variables</h2>
-<p>Returns the variables used in the brat. These are polynomial variables rather than symbolic variables. </p>
+<p>Returns the polynomial variables used.</p>
 <h4 id="example_8">Example</h4>
 <p>We define the following rational function using symbolic variables
 [ 
@@ -364,7 +368,68 @@ sage: varbs
 (x, y, z)
 sage: type(varbs[0])
 &lt;class 'sage.rings.polynomial.multi_polynomial_libsingular.MPolynomial_libsingular'&gt;
-</code></pre></div>
+</code></pre>
+<h2 id="write_latex">.write_latex</h2>
+<p>Writes the <code>brat</code> object to a file formatted in $\LaTeX$. The (default) output is a displayed equation (using <code>\[</code> and <code>\]</code>) of the <code>brat</code>. There are many parameters to change the format of the output.</p>
+<p>(Ordered) keyword arguments:</p>
+<ul>
+<li><code>filename</code>: the string for the output filename. Default: <code>None</code>, which will output a timestamp name of the form <code>%Y-%m-%d_%H-%M-%S.tex</code>.</li>
+<li><code>just_numerator</code>: write just the numerator. Default: <code>False</code>.</li>
+<li><code>just_denominator</code>: write just the denominator. Default: <code>False</code>.</li>
+<li><code>align</code>: format using the <code>align*</code> environment. This is especially useful for long polynomials. Default: <code>False</code>.</li>
+<li><code>line_width</code>: determines the line width in characters for each line of the <code>align*</code> environment. Only used when <code>align</code> is set to <code>True</code>. Default: <code>120</code>.</li>
+<li><code>function_name</code>: turns the expression to an equation by displaying the function name. Default: <code>None</code>.</li>
+<li><code>save_message</code>: turns on the save message at the end. Default: <code>True</code>.</li>
+</ul>
+<h4 id="examples">Examples</h4>
+<p>We will write the following function to <code>test.tex</code> with all the other parameters set to their defaults:
+[ 
+    \dfrac{1 + xy^2}{1 - x^2y^4}
+]</p>
+<pre><code class="language-python">sage: x, y = polygens(QQ, 'x,y')
+sage: f = br.brat(
+    numerator=1 + x*y^2,
+    denominator=1 - x^2*y^4
+)
+sage: f
+(1 + x*y^2)/(1 - x^2*y^4)
+sage: f.write_latex('test.tex')
+File saved as test.tex.
+sage: with open('test.tex', 'r') as out_file:
+....:     print(out_file.read())
+\[
+    \dfrac{1 + x y^2}{(1 - x^2y^4)}
+\]
+</code></pre>
+<p>Now we write the expanded polynomial to the file <code>binomial.tex</code>:
+[ 
+    (1 + X)^{20}
+]</p>
+<p>Since it is just a polynomial, we will set <code>just_numerator</code> to <code>True</code>. We will also print this in an <code>algin</code> environment, leaving the <code>line_width</code> at 120 characters. </p>
+<pre><code class="language-python">sage: X = polygens(QQ, 'X')[0]
+sage: f = br.brat((1 + X)^20)
+sage: f
+1 + 20*X + 190*X^2 + 1140*X^3 + 4845*X^4 + 15504*X^5 + 38760*X^6 + 77520*X^7 + 125970*X^8 + 167960*X^9 + 184756*X^10 + 167960*X^11 + 125970*X^12 + 77520*X^13 + 38760*X^14 + 15504*X^15 + 4845*X^16 + 1140*X^17 + 190*X^18 + 20*X^19 + X^20
+sage: f.write_latex(
+    filename=&quot;binomial.tex&quot;,
+    just_numerator=True,
+    align=True,
+    function_name=&quot;B_{20}(X)&quot;
+)
+sage: with open(&quot;binomial.tex&quot;, &quot;r&quot;) as output:
+....:     print(output.read())
+\begin{align*}
+    B_{20}(X) &amp;= 1 + 20X + 190X^2 + 1140X^3 + 4845X^4 + 15504X^5 + 38760X^6 + 77520X^7 + 125970X^8 \\ 
+    &amp;\quad + 167960X^9 + 184756X^{10} + 167960X^{11} + 125970X^{12} + 77520X^{13} + 38760X^{14} + 15504X^{15} \\ 
+    &amp;\quad + 4845X^{16} + 1140X^{17} + 190X^{18} + 20X^{19} + X^{20}
+\end{align*}
+</code></pre>
+<p>The polynomial compiles to </p>
+<p>[\begin{aligned}
+    B_{20}(X) &amp;= 1 + 20X + 190X^2 + 1140X^3 + 4845X^4 + 15504X^5 + 38760X^6 + 77520X^7 + 125970X^8 \\
+    &amp;\quad + 167960X^9 + 184756X^{10} + 167960X^{11} + 125970X^{12} + 77520X^{13} + 38760X^{14} + 15504X^{15} \\
+    &amp;\quad + 4845X^{16} + 1140X^{17} + 190X^{18} + 20X^{19} + X^{20}
+\end{aligned}]</p></div>
             </div>
         </div>
 
