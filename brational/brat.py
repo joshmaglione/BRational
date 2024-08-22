@@ -191,7 +191,6 @@ def _format(B, latex=False, factor=False):
 	numer = B._n_poly
 	if numer in ZZ:
 		n_str = wrap(numer)
-		n_wrap = False
 	else:
 		if factor:
 			factors = list(numer.factor())
@@ -203,15 +202,19 @@ def _format(B, latex=False, factor=False):
 		for f, e in factors:
 			f_str = ""
 			mon_n = f.monomials()
+			flip = 1
 			for i, m in enumerate(mon_n[::ORD]):
 				c = f.monomial_coefficient(m)
 				if i == 0:
-					f_str += wrap(c*m)
+					if c < 0:
+						flip = -1
+						unit = (-1)**e*unit
+					f_str += wrap(flip*c*m)
 				else: 
-					if c > 0:
-						f_str += " + " + wrap(f.monomial_coefficient(m)*m)
+					if flip*c > 0:
+						f_str += " + " + wrap(flip*f.monomial_coefficient(m)*m)
 					else:
-						f_str += " - " + wrap(-f.monomial_coefficient(m)*m)
+						f_str += " - " + wrap(-flip*f.monomial_coefficient(m)*m)
 			if e > 1:
 				if latex:
 					f_str = f"({f_str})^{{{e}}}"
@@ -233,7 +236,7 @@ def _format(B, latex=False, factor=False):
 					n_str = f"{wrap(unit)}{n_str}"
 				else:
 					n_str = f"{wrap(unit)}*{n_str}"
-		if len(factors) == 1 and unit == 1 and factors[0][1] == 1 and len(factors[0][0].monomials()) > 1 and not latex:
+		if len(factors) == 1 and unit == 1 and factors[0][1] == 1 and len(factors[0][0].monomials()) > 1 and not latex and B.denominator() != 1:
 			n_str = f"({n_str})"
 	varbs = B._ring.gens()
 	mon = lambda v: prod(x**e for x, e in zip(varbs, v))
