@@ -64,6 +64,10 @@ sage: F.denominator_signature()
  'factors': {(2, 0, 0): 5, (0, 4, 0): 3, (1, 1, 1): 1, (2, 1, 0): 1}}
 ```
 
+## .factor 
+
+Returns a new `brat` object with the numerator polynomial factored.
+
 ## .fix_denominator
 
 Given a polynomial&mdash;or data equivalent to a polynomial (see arguments)&mdash;returns a new `brat`, equal to the original, whose denominator is the given polynomial.
@@ -176,7 +180,8 @@ Returns a string that formats the `brat` in $\LaTeX$ in the `'\dfrac{...}{...}'`
 
 Additional argument:
 
-- `split`: If true, returns a pair of strings formatted in $\LaTeX$: the first is the numerator and the second is the denominator. Default: `False`.
+- `factor`: factor the numerator polynomial. Default: `False`.
+- `split`: if true, returns a pair of strings formatted in $\LaTeX$: the first is the numerator and the second is the denominator. Default: `False`.
 
 #### Example
 
@@ -325,6 +330,7 @@ Writes the `brat` object to a file formatted in $\LaTeX$. The (default) output i
 - `just_numerator`: write just the numerator. Default: `False`.
 - `just_denominator`: write just the denominator. Default: `False`.
 - `align`: format using the `align*` environment. This is especially useful for long polynomials. Default: `False`.
+- `factor`: factor the numerator polynomial. Default: `False`.
 - `line_width`: determines the line width in characters for each line of the `align*` environment. Only used when `align` is set to `True`. Default: `120`.
 - `function_name`: turns the expression to an equation by displaying the function name. Default: `None`.
 - `save_message`: turns on the save message at the end. Default: `True`.

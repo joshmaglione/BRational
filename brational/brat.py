@@ -1,5 +1,5 @@
 
-from sage.all import ZZ, SR, QQ, PolynomialRing, prod, vector, reduce
+from sage.all import ZZ, SR, QQ, PolynomialRing, prod, vector, reduce, copy
 from sage.all import latex as LaTeX
 from .util import my_print
 
@@ -179,7 +179,7 @@ def _remove_unnecessary_braces_and_spaces(latex_text):
 	]
 	return reduce(lambda x, y: y[0].sub(y[1], x), pairs, latex_text)
 
-def _format(B, latex=False):
+def _format(B, latex=False, factor=False):
 	if latex:
 		wrap = lambda X: LaTeX(X)
 	else:
@@ -193,20 +193,48 @@ def _format(B, latex=False):
 		n_str = wrap(numer)
 		n_wrap = False
 	else:
-		mon_n = numer.monomials()
-		n_wrap = len(mon_n) > 1
+		if factor:
+			factors = list(numer.factor())
+			unit = numer.factor().unit()
+		else:
+			factors = [(numer, 1)]
+			unit = 1
 		n_str = ""
-		for i, m in enumerate(mon_n[::ORD]):
-			c = numer.monomial_coefficient(m)
-			if i == 0:
-				n_str += wrap(c*m)
-				if not n_wrap:
-					n_wrap = not c in ZZ
-			else: 
-				if c > 0:
-					n_str += " + " + wrap(numer.monomial_coefficient(m)*m)
+		for f, e in factors:
+			f_str = ""
+			mon_n = f.monomials()
+			for i, m in enumerate(mon_n[::ORD]):
+				c = f.monomial_coefficient(m)
+				if i == 0:
+					f_str += wrap(c*m)
+				else: 
+					if c > 0:
+						f_str += " + " + wrap(f.monomial_coefficient(m)*m)
+					else:
+						f_str += " - " + wrap(-f.monomial_coefficient(m)*m)
+			if e > 1:
+				if latex:
+					f_str = f"({f_str})^{{{e}}}"
 				else:
-					n_str += " - " + wrap(-numer.monomial_coefficient(m)*m)
+					f_str = f"({f_str})^{e}*"
+			elif len(factors) > 1 or unit != 1:
+				if latex:
+					f_str = f"({f_str})"
+				else:
+					f_str = f"({f_str})*"
+			n_str += f_str
+		if n_str[-1] == "*":
+			n_str = n_str[:-1]
+		if unit != 1:
+			if unit == -1:
+				n_str = "-" + n_str
+			else:
+				if latex:
+					n_str = f"{wrap(unit)}{n_str}"
+				else:
+					n_str = f"{wrap(unit)}*{n_str}"
+		if len(factors) == 1 and unit == 1 and factors[0][1] == 1 and len(factors[0][0].monomials()) > 1 and not latex:
+			n_str = f"({n_str})"
 	varbs = B._ring.gens()
 	mon = lambda v: prod(x**e for x, e in zip(varbs, v))
 	d_str = ""
@@ -228,8 +256,6 @@ def _format(B, latex=False):
 			d_str += "*"
 	if not latex and len(gp_list) > 1:
 		d_str = "(" + d_str + ")"
-	if not latex and n_wrap and d_str != "":
-		n_str = "(" + n_str + ")"
 	return (n_str, d_str)
 
 def _format_polynomial_for_align(POLY, COLWIDTH, first=0):
@@ -318,9 +344,10 @@ class brat:
 		self._n_poly = T[1]			# Numerator polynomial
 		self._d_sig = T[2]			# Denominator with form \prod_i (1 - M_i)
 		self.increasing_order = increasing_order
+		self._factor = False
 
 	def __repr__(self) -> str:
-		N, D = _format(self)
+		N, D = _format(self, factor=self._factor)
 		if D == "":
 			return f"{N}"
 		return f"{N}/{D}"
@@ -427,6 +454,14 @@ class brat:
 		"""
 		return self._d_sig
 
+	def factor(self):
+		r"""Returns a new ``brat`` object with the numerator polynomial factored.
+
+		"""
+		B = copy(self)
+		B._factor = True
+		return B
+
 	def fix_denominator(self, expression=None, signature=None):
 		r"""Given a polynomial, or data equivalent to a polynomial, returns a new ``brat``, equal to the original, whose denominator is the given polynomial.
 
@@ -500,12 +535,13 @@ class brat:
 			)
 		return N/self.denominator()
 
-	def latex(self, split=False):
+	def latex(self, factor=False, split=False):
 		r"""Returns a string that formats the ``brat` `in LaTeX in the ``\dfrac{...}{...}`` format.
 
 		Additional argument:
 
-		- ``split``: If true, returns a pair of strings formatted in LaTeX: the first is the numerator and the second is the denominator. Default: ``False``.
+		- ``factor``: factor the numerator polynomial. Default: ``False``.
+		- ``split``: if true, returns a pair of strings formatted in LaTeX: the first is the numerator and the second is the denominator. Default: ``False``.
 
 		EXAMPLE::
 
@@ -522,7 +558,7 @@ class brat:
 			('1 + 2t^2 + 4t^4 + 4t^6 + 2t^8 + t^{10}',
 			'(1 - t)(1 - t^2)(1 - t^3)(1 - t^4)(1 - t^5)')
 		"""
-		N, D = _format(self, latex=True)
+		N, D = _format(self, latex=True, factor=factor)
 		N_clean = _remove_unnecessary_braces_and_spaces(N)
 		D_clean = _remove_unnecessary_braces_and_spaces(D)
 		if split:
@@ -608,6 +644,7 @@ class brat:
 			just_numerator=False,
 			just_denominator=False,
 			align=False,
+			factor=False,
 			line_width=100,
 			function_name=None,
 			save_message=True
@@ -618,6 +655,7 @@ class brat:
 		- ``just_numerator``: write just the numerator. Default: ``False``.
 		- ``just_denominator``: write just the denominator. Default: ``False``.
 		- ``align``: format using the ``align*`` environment. This is especially useful for long polynomials. Default: ``False``.
+		- ``factor``: factor the numerator polynomial. Default: ``False``.
 		- ``line_width``: determines the line width in characters for each line of the ``align*`` environment. Only used when ``align`` is set to ``True``. Default: ``120``.
 		- ``function_name``: turns the expression to an equation by displaying the function name. Default: ``None``.
 		- ``save_message``: turns on the save message at the end. Default: ``True``.
@@ -665,11 +703,11 @@ class brat:
 		if line_width < 60:
 			raise ValueError("line width must be at least 60.")
 		if just_numerator:
-			func = self.latex(split=True)[0]
+			func = self.latex(split=True, factor=factor)[0]
 		elif just_denominator:
-			func = self.latex(split=True)[1]
+			func = self.latex(split=True, factor=factor)[1]
 		else:
-			func = self.latex()
+			func = self.latex(factor=factor)
 			align = False
 		if not function_name is None:
 			if align:

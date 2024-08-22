@@ -91,6 +91,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#factor" class="nav-link">.factor</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-level="2"><a href="#fix_denominator" class="nav-link">.fix_denominator</a>
               <ul class="nav flex-column">
               </ul>
@@ -184,6 +188,8 @@ sage: F.denominator_signature()
 {'monomial': 3,
  'factors': {(2, 0, 0): 5, (0, 4, 0): 3, (1, 1, 1): 1, (2, 1, 0): 1}}
 </code></pre>
+<h2 id="factor">.factor</h2>
+<p>Returns a new <code>brat</code> object with the numerator polynomial factored.</p>
 <h2 id="fix_denominator">.fix_denominator</h2>
 <p>Given a polynomial&mdash;or data equivalent to a polynomial (see arguments)&mdash;returns a new <code>brat</code>, equal to the original, whose denominator is the given polynomial.</p>
 <p>(Ordered) keyword arguments:</p>
@@ -268,7 +274,8 @@ False
 <p>Returns a string that formats the <code>brat</code> in $\LaTeX$ in the <code>'\dfrac{...}{...}'</code> format.</p>
 <p>Additional argument:</p>
 <ul>
-<li><code>split</code>: If true, returns a pair of strings formatted in $\LaTeX$: the first is the numerator and the second is the denominator. Default: <code>False</code>.</li>
+<li><code>factor</code>: factor the numerator polynomial. Default: <code>False</code>.</li>
+<li><code>split</code>: if true, returns a pair of strings formatted in $\LaTeX$: the first is the numerator and the second is the denominator. Default: <code>False</code>.</li>
 </ul>
 <h4 id="example_4">Example</h4>
 <p>We obtain a $\LaTeX$ formatting of the following rational function:
@@ -377,6 +384,7 @@ sage: type(varbs[0])
 <li><code>just_numerator</code>: write just the numerator. Default: <code>False</code>.</li>
 <li><code>just_denominator</code>: write just the denominator. Default: <code>False</code>.</li>
 <li><code>align</code>: format using the <code>align*</code> environment. This is especially useful for long polynomials. Default: <code>False</code>.</li>
+<li><code>factor</code>: factor the numerator polynomial. Default: <code>False</code>.</li>
 <li><code>line_width</code>: determines the line width in characters for each line of the <code>align*</code> environment. Only used when <code>align</code> is set to <code>True</code>. Default: <code>120</code>.</li>
 <li><code>function_name</code>: turns the expression to an equation by displaying the function name. Default: <code>None</code>.</li>
 <li><code>save_message</code>: turns on the save message at the end. Default: <code>True</code>.</li>
