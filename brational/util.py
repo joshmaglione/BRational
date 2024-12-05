@@ -1,3 +1,5 @@
+DEBUG = False
+
 def my_print(on:bool, string:str, level:int=0):
     from datetime import datetime
     if on:

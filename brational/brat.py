@@ -1,7 +1,7 @@
 
 from sage.all import ZZ, SR, QQ, PolynomialRing, prod, vector, reduce, copy
 from sage.all import latex as LaTeX
-from .util import my_print
+from .util import my_print, DEBUG
 
 # Given a polynomial f, decide if f is a finite geometric progression. If it is
 # not, raise an error. This is because we assume our rational functions can be
@@ -15,9 +15,10 @@ def _is_finite_gp(f):
 	term = lambda k: f.monomial_coefficient(m[k])*m[k]
 	r = term(0) / term(1) 		# higher degrees appear first by default
 	if any(term(i) / term(i+1) != r for i in range(len(m) - 1)):
-		raise ValueError("Denominator must be a product of the form: monomial*(1 - monomial).")
+		raise ValueError("Denominator not in correct form.")
 	return (term(-1), r, len(m))
 
+# Play games and hope you turn f into an element of P.
 def get_poly(f, P):
 	if f in ZZ:
 		return f
@@ -33,7 +34,10 @@ def get_poly(f, P):
 	else:
 		raise TypeError("Numerator must be a polynomial.")
 
-def _unfold_signature(R, sig, exp_func=lambda e: True):
+# Takes the underlying polynomial ring R and the signature and multiplies all
+# suitable factors together. Here, suitable is determined by exp_func. By
+# default, everything is suitable.
+def _unfold_signature(R, sig, exp_func=lambda _: True):
 	varbs = R.gens()
 	mon = lambda v: R(prod(x**e for x, e in zip(varbs, v)))
 	if not "monomial" in sig:
@@ -42,7 +46,9 @@ def _unfold_signature(R, sig, exp_func=lambda e: True):
 		(1 - mon(v))**abs(e) for v, e in sig["factors"].items() if exp_func(e)
 	)
 
-def _get_signature(R, N, D, verbose=False):
+# Given the polynomial ring R, the numerator N, and the denominator D, construct
+# the denominator signature.
+def _get_signature(R, N, D, verbose=DEBUG):
 	varbs = R.gens()
 	def deg(m):
 		try: 
@@ -104,7 +110,9 @@ def _get_signature(R, N, D, verbose=False):
 	# Clean up the monomial a little bit. 
 	pos_facts_cleaned = R.one()
 	for n_mon, e in list(pos_facts.factor()):
+		my_print(verbose, f"Polynomial: {n_mon}", 1)
 		k, r, n = _is_finite_gp(n_mon)
+		my_print(verbose, f"data: ({k}, {r}, {n})", 2)
 		r_num, r_den = R(r.numerator()), R(r.denominator())
 		if r_num.monomial_coefficient(r_num.monomials()[0]) > 0:
 			v = tuple(deg(r_num) - deg(r_den))
@@ -113,17 +121,21 @@ def _get_signature(R, N, D, verbose=False):
 				m = min(e, gp_factors[v_n])
 				gp_factors[v_n] -= m
 				pos_facts_cleaned *= k*(1 - mon(v_n))**(e - m)
+			else:
+				pos_facts_cleaned *= k*(1 - mon(v_n))**e
 			if v in gp_factors:
 				gp_factors[v] += e
 			else:
 				gp_factors[v] = e
+		else:
+			pos_facts_cleaned *= n_mon**e
 	N_form = N*pos_facts_cleaned*_unfold_signature(
 		R, {"factors": gp_factors}, lambda e: e < 0
 	)
 	D_form = const*_unfold_signature(
 		R, {"factors": gp_factors}, lambda e: e > 0
 	)
-	if N_form/D_form != N/D:
+	if N_form/D_form != N/D:	# Most important check!
 		my_print(verbose, "ERROR!")
 		my_print(verbose, f"Expected:\n\t{N/D}")
 		my_print(verbose, f"Numerator:\n\t{N_form}")
@@ -163,6 +175,7 @@ def _process_input(num, dem=None, sig=None, fix=True):
 		N_new = N
 	return (P, N_new, D_sig)
 
+# The length of the function name is unnecessarily long.
 def _remove_unnecessary_braces_and_spaces(latex_text):
 	import re
 	patt_braces = re.compile(r'[\^\_]\{.\}')
@@ -292,6 +305,7 @@ def _format_polynomial_for_align(POLY, COLWIDTH, first=0):
 	output_string = " \\\\ \n\t&\\quad ".join(output_lines)
 	return output_string
 
+# The main class of BRational.
 class brat:
 	r"""
 	A class for beautifully formatted rational functions.
