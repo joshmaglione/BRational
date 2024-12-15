@@ -175,3 +175,15 @@ sage: P = br.brat(
 sage: P
 (6*T^3 + 11*T^2 + 6*T + 1)/(1 - T)^4
 ```
+
+## Example (pretty_print)
+
+When applying the SageMath function `pretty_print` (or when it is on) in a Jupyter notebook, the brat will be displayed with $\LaTeX$.
+
+There are many ways to set up a Jupyter notebook. One way is to run the following.
+```bash
+$ sage -n Jupyter
+```
+
+In our Jupyter notebook, we observe the following.
+![](pretty_print.png)

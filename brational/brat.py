@@ -523,8 +523,10 @@ class brat:
 			increasing_order=self.increasing_order
 		)
 
-	def invert_variables(self):
+	def invert_variables(self, ratio=False):
 		r"""Returns the corresponding ``brat`` after inverting all of the variables and then rewriting the rational function so that all exponents are non-negative. 
+
+		- ``ratio'': returns the ratio of the original brat divided by the brat with inverted variables. Default: ``False''.
 		
 		EXAMPLE::
 
@@ -538,6 +540,8 @@ class brat:
 			sage: E.invert_variables()
 			(-T - 26*T^2 - 66*T^3 - 26*T^4 - T^5)/(1 - T)^5
 		"""
+		if ratio:
+			return brat(self.invert_variables()/self)
 		varbs = self._ring.gens()
 		mon = lambda v: self._ring(prod(x**e for x, e in zip(varbs, v)))
 		factor = prod(
@@ -581,6 +585,9 @@ class brat:
 		if split:
 			return (f"{N_clean}", f"{D_clean}")
 		return f"\\dfrac{{{N_clean}}}{{{D_clean}}}"
+	
+	def _latex_(self):
+		return self.latex(factor=self._factor)
 	
 	def numerator(self):
 			r"""Returns the polynomial in the numerator of the rational function. This is not necessarily reduced.

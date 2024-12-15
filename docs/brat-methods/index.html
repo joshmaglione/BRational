@@ -235,6 +235,10 @@ t^3 - 6*t^2 + 11*t - 6
 </code></pre>
 <h2 id="invert_variables">.invert_variables</h2>
 <p>Returns the corresponding <code>brat</code> after inverting all of the variables and then rewriting the rational function so that all exponents are non-negative. </p>
+<p>Keyword argument:</p>
+<ul>
+<li><code>ratio</code>: returns the ratio of the original brat divided by the brat with inverted variables. Default: <code>False</code>.</li>
+</ul>
 <h3 id="example-1">Example 1</h3>
 <p>We will verify that, after inverting the variables of 
 [ 
@@ -253,6 +257,10 @@ sage: E.invert_variables()
 </code></pre>
 <p>Now we can show it more clearly.</p>
 <pre><code class="language-python">sage: E.invert_variables()/E
+-T
+</code></pre>
+<p>We can achieve this all in one go by using the keyword <code>ratio</code>.</p>
+<pre><code class="language-python">sage: E.invert_variables(ratio=True)
 -T
 </code></pre>
 <h3 id="example-2">Example 2</h3>
