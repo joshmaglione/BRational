@@ -182,7 +182,7 @@ When applying the SageMath function `pretty_print` (or when it is on) in a Jupyt
 
 There are many ways to set up a Jupyter notebook. One way is to run the following.
 ```bash
-$ sage -n Jupyter
+$ sage -n jupyter
 ```
 
 In our Jupyter notebook, we observe the following.

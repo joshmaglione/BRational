@@ -192,6 +192,9 @@ def _remove_unnecessary_braces_and_spaces(latex_text):
 	]
 	return reduce(lambda x, y: y[0].sub(y[1], x), pairs, latex_text)
 
+def check_parenth(factors, unit, den):
+	return len(factors) == 1 and unit == 1 and factors[0][1] == 1 and len(factors[0][0].monomials()) > 1 and den != 1
+
 def _format(B, latex=False, factor=False):
 	if latex:
 		wrap = lambda X: LaTeX(X)
@@ -233,7 +236,7 @@ def _format(B, latex=False, factor=False):
 					f_str = f"({f_str})^{{{e}}}"
 				else:
 					f_str = f"({f_str})^{e}*"
-			elif len(factors) > 1 or unit != 1:
+			elif (len(factors) > 1 or unit != 1) and len(f.monomials()) != 1:
 				if latex:
 					f_str = f"({f_str})"
 				else:
@@ -249,7 +252,7 @@ def _format(B, latex=False, factor=False):
 					n_str = f"{wrap(unit)}{n_str}"
 				else:
 					n_str = f"{wrap(unit)}*{n_str}"
-		if len(factors) == 1 and unit == 1 and factors[0][1] == 1 and len(factors[0][0].monomials()) > 1 and not latex and B.denominator() != 1:
+		if not latex and check_parenth(factors, unit, B.denominator()):
 			n_str = f"({n_str})"
 	varbs = B._ring.gens()
 	mon = lambda v: prod(x**e for x, e in zip(varbs, v))
