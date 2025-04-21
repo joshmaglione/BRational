@@ -2,7 +2,7 @@
 
 The class we use to format rational functions is `brat`, and the kinds of rational functions accepted have the form
 \[ 
-	\dfrac{F(\bm{X})}{C\cdot \prod_{i=1}^m(1 - \bm{X}^{\alpha_i})}, 
+	\dfrac{F(\bm{X})}{C\bm{X}^{\beta} \prod_{i=1}^m(1 - \bm{X}^{\alpha_i})}, 
 \] 
 
 where the following hold:
@@ -10,10 +10,11 @@ where the following hold:
 - $\bm{X}=(X_1, \dots, X_n)$ are variables,
 - $F(\bm{X})\in \mathbb{Z}[\bm{X}]$,
 - $C\in \mathbb{Z}$, 
+- $\beta\in\N_0^n$,
 - $m\in\N_0$, 
-- $\alpha_i\in\N_0^n$, where $\bm{X}^{\alpha_i} = X_1^{\alpha_{i,1}}\cdots X_n^{\alpha_{i,n}}$.
+- $\alpha_i\in\mathbb{Z}^n$, where $\bm{X}^{\alpha_i} = X_1^{\alpha_{i,1}}\cdots X_n^{\alpha_{i,n}}$.
 
-The rules are sometimes bent in fortunate circumstances, for example $C$ might be a monomial in $\mathbb{Z}[\bm{X}]$. The above assumption is the minimal **main assumption**.
+The above assumption is the minimal **main assumption**.
 
 The (ordered) keyword arguments for `brat` are
 
@@ -22,7 +23,8 @@ The (ordered) keyword arguments for `brat` are
 - `denominator`: the denominator polynomial of the rational function (default: `None`),
 - `denominator_signature`: the dictionary of data for the denominator (default: `None`),
 - `fix_denominator`: whether to keep the given denominator fixed (default: `True`),
-- `increasing_order`: whether to display polynomials in increasing degree (default: `True`).
+- `increasing_order`: whether to display polynomials in increasing degree (default: `True`),
+- `negative_exponents`: whether to absorb the monomial $\bm{X}^{\beta}$ in the above denominator into the numerator (default: `True`).
 
 *Additional notes*. The `denominator_signature` must be a dictionary whose keys are tuples of non-negative integers and whose keys are non-negative integers. If given a `denominator_signature`, the `numerator` will be used to determine the accepted ordered variables. [We do this by looking to its parent ring if `numerator` is a polynomial, or at the variables present if a symbolic expression.] Examples of acceptable `denominator_signature` are given in [Example 3](#example-3) and in the [denominator_signature](brat-methods.md#denominator_signature) method.
 

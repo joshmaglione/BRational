@@ -1,3 +1,9 @@
+#
+#   Copyright 2024--2025 Joshua Maglione
+#
+#   Distributed under MIT License
+#
+
 DEBUG = False
 
 def my_print(on:bool, string:str, level:int=0):

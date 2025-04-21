@@ -1,3 +1,8 @@
+#
+#   Copyright 2024--2025 Joshua Maglione
+#
+#   Distributed under MIT License
+#
 
 from sage.all import ZZ, SR, QQ, PolynomialRing, prod, vector, reduce, copy
 from sage.all import latex as LaTeX
@@ -15,7 +20,11 @@ def _is_finite_gp(f):
 	term = lambda k: f.monomial_coefficient(m[k])*m[k]
 	r = term(0) / term(1) 		# higher degrees appear first by default
 	if any(term(i) / term(i+1) != r for i in range(len(m) - 1)):
+		my_print(DEBUG, f"Believe given polynomial is not a finite geomtric progression:\n\t{f=}")
 		raise ValueError("Denominator not in correct form.")
+	if f != term(-1) * (1 - r**len(m)) / (1 - r):
+		my_print(DEBUG, f"Determined given polynomial\n\t{f=}\nis a finite geometric progression:\n\t({term(-1)})*(1 - ({r})^{len(m)})/(1 - ({r}))\nbut cannot determine equality.")
+		raise RuntimeError("Unexpected behavior! Cannot trust results. Contact Josh.")
 	return (term(-1), r, len(m))
 
 # Play games and hope you turn f into an element of P.
@@ -26,12 +35,15 @@ def get_poly(f, P):
 		try:
 			return P(f.polynomial(QQ))
 		except TypeError:
+			my_print(DEBUG, f"Cannot build polynomial. Given\n\t{f=} of type {type(f)}\n\t{P=} of type {type(P)}")
 			raise TypeError("Numerator must be a polynomial.")
 		except AttributeError:
+			my_print(DEBUG, f"Cannot build polynomial. Given\n\t{f=} of type {type(f)}\n\t{P=} of type {type(P)}")
 			raise TypeError("Numerator must be a polynomial.")
 	elif len(f.monomials()) > 0:
 		return P(f)
 	else:
+		my_print(DEBUG, f"Cannot build polynomial. Given\n\t{f=} of type {type(f)}\n\t{P=} of type {type(P)}")
 		raise TypeError("Numerator must be a polynomial.")
 
 # Takes the underlying polynomial ring R and the signature and multiplies all
@@ -323,7 +335,9 @@ class brat:
 
 	- ``fix_denominator``: whether to keep the given denominator fixed (default: ``True``),
 
-	- ``increasing_order``: whether to display polynomials in increasing degree (default: ``True``).
+	- ``increasing_order``: whether to display polynomials in increasing degree (default: ``True``),
+
+	- ``negative_exponents``: whether to absorb the monomial in the denominator into the numerator (default: ``True``).
 	"""
 
 	def __init__(self, 
@@ -332,7 +346,8 @@ class brat:
 			denominator=None,
 			denominator_signature=None,
 			fix_denominator=True,
-			increasing_order=True
+			increasing_order=True,
+			negative_exponents=True,
 		):
 		if not denominator is None and denominator == 0:
 			raise ValueError("Denominator cannot be zero.")
@@ -364,6 +379,7 @@ class brat:
 		self._n_poly = T[1]			# Numerator polynomial
 		self._d_sig = T[2]			# Denominator with form \prod_i (1 - M_i)
 		self.increasing_order = increasing_order
+		self.negative_exponents = negative_exponents
 		self._factor = False
 
 	def __repr__(self) -> str:
@@ -589,6 +605,7 @@ class brat:
 			return (f"{N_clean}", f"{D_clean}")
 		return f"\\dfrac{{{N_clean}}}{{{D_clean}}}"
 	
+	# Just for SageMath's `pretty_print` function
 	def _latex_(self):
 		return self.latex(factor=self._factor)
 	
