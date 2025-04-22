@@ -14,12 +14,14 @@ def test_integers():
 	assert str(brat(ZZ(-12)).factor()) == "-12"
 
 def test_rationals():
-	assert str(brat(int(1)/int(2))) == "1/2"		# FAILING
+	assert str(brat(int(1)/int(2))) == "1/2"
 	assert str(brat(int(3)/int(2))) == "3/2"
 	assert str(brat(int(9)/int(12))) == "3/4"
 	assert str(brat(ZZ(1)/ZZ(2))) == "1/2"
 	assert str(brat(ZZ(3)/ZZ(2))) == "3/2"
 	assert str(brat(ZZ(9)/ZZ(12))) == "3/4"
+	assert str(brat(numerator=ZZ(5), denominator=int(10), fix_denominator=False)) == "1/2"
+	assert str(brat(numerator=ZZ(5), denominator=ZZ(10), fix_denominator=True)) == "5/10"
 
 def main():
 	test_integers()

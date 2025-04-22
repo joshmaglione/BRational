@@ -177,8 +177,17 @@ def _process_input(num, dem=None, sig=None, fix=True):
 	else:
 		R = num/dem
 	if R in QQ and (dem is None or dem in QQ) and (sig is None or sig["factors"] == {}):
-		N, D = R.numerator(), R.denominator()
-		return (QQ, N, {"coefficient": 1, "monomial": (), "factors": {}})
+		if fix:
+			return (QQ, num, {
+				"coefficient": dem, 
+				"monomial": (), 
+				"factors": {}
+			})
+		return (QQ, R.numerator(), {
+			"coefficient": R.denominator(), 
+			"monomial": (), 
+			"factors": {}
+		})
 	try:	# Not sure how best to do this. Argh!
 		varbs = (R.numerator()*R.denominator()).parent().gens()
 	except AttributeError and RuntimeError:
@@ -404,6 +413,7 @@ class brat:
 				D = None
 			else:
 				D = denominator
+		my_print(DEBUG, f"Given\n\tNumerator: {N}\n\tDenominator: {D}")
 		T = _process_input(
 			N, 
 			dem=D, 

@@ -4,7 +4,7 @@
 #   Distributed under MIT License
 #
 
-DEBUG = False
+DEBUG = True
 
 def my_print(on:bool, string:str, level:int=0):
     from datetime import datetime
