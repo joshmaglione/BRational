@@ -380,6 +380,13 @@ class brat:
 		if not denominator is None and denominator == 0:
 			raise ValueError("Denominator cannot be zero.")
 		if not rational_expression is None:
+			if isinstance(rational_expression, int):
+				rational_expression = ZZ(rational_expression)
+			if isinstance(rational_expression, float):
+				try:
+					rational_expression = QQ(rational_expression)
+				except TypeError:
+					raise TypeError("Input must be a rational function.")
 			try:
 				N = rational_expression.numerator()
 				D = rational_expression.denominator()

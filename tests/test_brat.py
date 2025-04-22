@@ -1,0 +1,30 @@
+from brational import brat
+from sage.all import ZZ, QQ, polygens
+
+def test_integers():
+	assert str(brat(int(1))) == "1"
+	assert str(brat(int(0))) == "0"
+	assert str(brat(int(-1))) == "-1"
+	assert str(brat(ZZ(1))) == "1"
+	assert str(brat(ZZ(0))) == "0"
+	assert str(brat(ZZ(-1))) == "-1"
+	assert str(brat(ZZ(4))) == "4"
+	assert str(brat(ZZ(-12))) == "-12"
+	assert str(brat(ZZ(4)).factor()) == "4"
+	assert str(brat(ZZ(-12)).factor()) == "-12"
+
+def test_rationals():
+	assert str(brat(int(1)/int(2))) == "1/2"		# FAILING
+	assert str(brat(int(3)/int(2))) == "3/2"
+	assert str(brat(int(9)/int(12))) == "3/4"
+	assert str(brat(ZZ(1)/ZZ(2))) == "1/2"
+	assert str(brat(ZZ(3)/ZZ(2))) == "3/2"
+	assert str(brat(ZZ(9)/ZZ(12))) == "3/4"
+
+def main():
+	test_integers()
+	test_rationals()
+	print("All tests passed!")
+
+if __name__ == "__main__":
+	main()
