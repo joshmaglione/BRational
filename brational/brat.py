@@ -24,7 +24,7 @@ def _is_finite_gp(f):
 		raise ValueError("Denominator not in correct form.")
 	if f != term(-1) * (1 - r**len(m)) / (1 - r):
 		my_print(DEBUG, f"Determined given polynomial\n\t{f=}\nis a finite geometric progression:\n\t({term(-1)})*(1 - ({r})^{len(m)})/(1 - ({r}))\nbut cannot determine equality.")
-		raise RuntimeError("Unexpected behavior! Cannot trust results. Contact Josh.")
+		raise RuntimeError("Unexpected behavior. Contact Josh.")
 	return (term(-1), r, len(m))
 
 # Play games and hope you turn f into an element of P.
@@ -46,21 +46,26 @@ def get_poly(f, P):
 		my_print(DEBUG, f"Cannot build polynomial. Given\n\t{f=} of type {type(f)}\n\t{P=} of type {type(P)}")
 		raise TypeError("Numerator must be a polynomial.")
 
-# Takes the underlying polynomial ring R and the signature and multiplies all
-# suitable factors together. Here, suitable is determined by exp_func. By
-# default, everything is suitable.
+# Given the polynomial ring R and signature sig, multiply all suitable factors
+# together. Here, suitable is determined by exp_func. By default, everything is
+# suitable.
 def _unfold_signature(R, sig, exp_func=lambda _: True):
 	varbs = R.gens()
 	mon = lambda v: R(prod(x**e for x, e in zip(varbs, v)))
 	if not "monomial" in sig:
-		sig.update({"monomial": 1})
-	return sig["monomial"]*prod(
+		zero = tuple([0]*len(varbs))
+		sig.update({"monomial": zero})
+	if not "coefficient" in sig:
+		sig.update({"coefficient": 1})
+	monomial = sig["coefficient"]*mon(sig["monomial"])
+	factors = prod(
 		(1 - mon(v))**abs(e) for v, e in sig["factors"].items() if exp_func(e)
 	)
+	return monomial*factors
 
 # Given the polynomial ring R, the numerator N, and the denominator D, construct
 # the denominator signature.
-def _get_signature(R, N, D, verbose=DEBUG):
+def _get_signature(R, N, D):
 	varbs = R.gens()
 	def deg(m):
 		try: 
@@ -68,42 +73,42 @@ def _get_signature(R, N, D, verbose=DEBUG):
 		except TypeError:
 			return vector(ZZ, [m.degree() for _ in varbs])
 	mon = lambda v: R(prod(x**e for x, e in zip(varbs, v)))
-	D_factors = list(D.factor())
-	gp_factors = {}
-	pos_facts = R(1)
-	const = D.factor().unit()
-	my_print(verbose, f"Numerator:\n\t{N}")
-	my_print(verbose, f"Denominator:\n\t{D_factors}")
-	my_print(verbose, f"Monomial:\n\t{const}")
+	D_factors = list(D.factor())		# all factors in denominator
+	gp_factors = {}						# all geometric progressions
+	pos_facts = R(1)					# all factors to go to numerator
+	const = D.factor().unit()			# the monomial
+	my_print(DEBUG, f"Numerator:\n\t{N}")
+	my_print(DEBUG, f"Denominator:\n\t{D_factors}")
+	my_print(DEBUG, f"Monomial:\n\t{const}")
 	while len(D_factors) > 0:
 		f, e = D_factors[0]
 		m_f = f.monomials()
 		if len(m_f) == 2 and prod(f.coefficients()) < 0:
-			my_print(verbose, f"Polynomial: {f} -- is GP", 1)
+			my_print(DEBUG, f"Polynomial: {f} -- is GP", 1)
 			v = tuple(deg(m_f[0]) - deg(m_f[1]))
-			my_print(verbose, f"degree: {v}", 2)
+			my_print(DEBUG, f"degree: {v}", 2)
 			if v in gp_factors:
 				gp_factors[v] += e
 			else:
 				gp_factors[v] = e
 			if f.monomial_coefficient(m_f[1]) < 0:
-				my_print(verbose, f"const: {(-1)**e}", 2)
+				my_print(DEBUG, f"const: {(-1)**e}", 2)
 				const *= (-1)**e
 		elif len(m_f) == 1:
-			my_print(verbose, f"Polynomial: {f} -- a monomial", 1)
+			my_print(DEBUG, f"Polynomial: {f} -- a monomial", 1)
 			const *= f**e
-			my_print(verbose, f"const: {const}", 2)
+			my_print(DEBUG, f"const: {const}", 2)
 		else:
-			my_print(verbose, f"Polynomial: {f} -- is not GP", 1)
+			my_print(DEBUG, f"Polynomial: {f} -- is not GP", 1)
 			k, r, n = _is_finite_gp(f)
-			my_print(verbose, f"data: ({k}, {r}, {n})", 2)
+			my_print(DEBUG, f"data: ({k}, {r}, {n})", 2)
 			r_num, r_den = R(r.numerator()), R(r.denominator())
 			const *= k
 			if r_num.monomial_coefficient(r_num.monomials()[0]) > 0:
 				v = tuple(deg(r_num) - deg(r_den))
 				v_n = tuple(n*(deg(r_num) - deg(r_den)))
-				my_print(verbose, f"n-degree: {v_n}", 2)
-				my_print(verbose, f"degree: {v}", 2)
+				my_print(DEBUG, f"n-degree: {v_n}", 2)
+				my_print(DEBUG, f"degree: {v}", 2)
 				if v_n in gp_factors:
 					gp_factors[v_n] += e
 				else:
@@ -113,18 +118,18 @@ def _get_signature(R, N, D, verbose=DEBUG):
 				else:
 					gp_factors[v] = -e
 			else:
-				my_print(verbose, f"Pushing: (1 + {(-r)**n}, {e})", 2)
+				my_print(DEBUG, f"Pushing: (1 + {(-r)**n}, {e})", 2)
 				D_factors.append(((r_den**n + (-r_num)**n), e))
 				pos_facts *= (r_den - r_num)**e
 		D_factors = D_factors[1:]
-	my_print(verbose, f"Final factors: {gp_factors}", 1)
-	my_print(verbose, f"Accumulated factors: {pos_facts}", 1)
+	my_print(DEBUG, f"Final factors: {gp_factors}", 1)
+	my_print(DEBUG, f"Accumulated factors: {pos_facts}", 1)
 	# Clean up the monomial a little bit. 
 	pos_facts_cleaned = R.one()
 	for n_mon, e in list(pos_facts.factor()):
-		my_print(verbose, f"Polynomial: {n_mon}", 1)
+		my_print(DEBUG, f"Polynomial: {n_mon}", 1)
 		k, r, n = _is_finite_gp(n_mon)
-		my_print(verbose, f"data: ({k}, {r}, {n})", 2)
+		my_print(DEBUG, f"data: ({k}, {r}, {n})", 2)
 		r_num, r_den = R(r.numerator()), R(r.denominator())
 		if r_num.monomial_coefficient(r_num.monomials()[0]) > 0:
 			v = tuple(deg(r_num) - deg(r_den))
@@ -148,17 +153,24 @@ def _get_signature(R, N, D, verbose=DEBUG):
 		R, {"factors": gp_factors}, lambda e: e > 0
 	)
 	if N_form/D_form != N/D:	# Most important check!
-		my_print(verbose, "ERROR!")
-		my_print(verbose, f"Expected:\n\t{N/D}")
-		my_print(verbose, f"Numerator:\n\t{N_form}")
-		my_print(verbose, f"Denominator:\n\t{D_form}")
-		raise ValueError("Error in implementation. Contact Josh.")
-	if const < 0:
+		my_print(DEBUG, "ERROR!")
+		my_print(DEBUG, f"Expected:\n\t{N/D}")
+		my_print(DEBUG, f"Numerator:\n\t{N_form}")
+		my_print(DEBUG, f"Denominator:\n\t{D_form}")
+		raise RuntimeError("Unexpected behavior. Contact Josh.")
+	const_unit = const.factor().unit()
+	const_mono = const/const_unit
+	if const_unit < 0:
 		N_form = -N_form
-		const = -const
+		const_unit = -const_unit
 	gp_factors = {v: e for v, e in gp_factors.items() if e > 0}
-	return (N_form, {"monomial": const, "factors": gp_factors})
+	return (N_form, {
+		"coefficient": const_unit,
+		"monomial": tuple(deg(const_mono)), 
+		"factors": gp_factors,
+	})
 
+# Given data, determine the polynomial ring, the numerator and the denominator.
 def _process_input(num, dem=None, sig=None, fix=True):
 	if dem is None:
 		R = num
@@ -166,14 +178,15 @@ def _process_input(num, dem=None, sig=None, fix=True):
 		R = num/dem
 	if R in QQ and (dem is None or dem in QQ) and (sig is None or sig["factors"] == {}):
 		N, D = R.numerator(), R.denominator()
-		return (QQ, N, {"monomial": D, "factors": {}})
+		return (QQ, N, {"coefficient": 1, "monomial": (), "factors": {}})
 	try:	# Not sure how best to do this. Argh!
 		varbs = (R.numerator()*R.denominator()).parent().gens()
 	except AttributeError and RuntimeError:
 		varbs = R.variables()
 	P = PolynomialRing(QQ, varbs)
-	if dem is None:
+	if dem is None:		# Then we are given a signature
 		dem = _unfold_signature(P, sig)
+	# Determine the polynomial expressions for the numerator and denominator.
 	if fix:
 		N = get_poly(num, P)
 		D = get_poly(dem, P)
@@ -204,76 +217,84 @@ def _remove_unnecessary_braces_and_spaces(latex_text):
 	]
 	return reduce(lambda x, y: y[0].sub(y[1], x), pairs, latex_text)
 
-def check_parenth(factors, unit, den):
-	return len(factors) == 1 and unit == 1 and factors[0][1] == 1 and len(factors[0][0].monomials()) > 1 and den != 1
-
-def _format(B, latex=False, factor=False):
+# Given data, format the numerator. Returns the formatted numerator as a string.
+def _format_numerator(numer, factor:bool, inc_ord:bool, latex:bool) -> str:
+	ORD = -1 if inc_ord else 1
 	if latex:
 		wrap = lambda X: LaTeX(X)
 	else:
 		wrap = lambda X: str(X)
-	if B.increasing_order:
-		ORD = -1
-	else:
-		ORD = 1
-	numer = B._n_poly
 	if numer in ZZ:
-		n_str = wrap(numer)
+		return wrap(numer)
+	if factor:
+		factors = list(numer.factor())
+		unit = numer.factor().unit()
 	else:
-		if factor:
-			factors = list(numer.factor())
-			unit = numer.factor().unit()
-		else:
-			factors = [(numer, 1)]
-			unit = 1
-		n_str = ""
-		for f, e in factors:
-			f_str = ""
-			mon_n = f.monomials()
-			flip = 1
-			for i, m in enumerate(mon_n[::ORD]):
-				c = f.monomial_coefficient(m)
-				if i == 0:
-					if c < 0:
-						flip = -1
-						unit = (-1)**e*unit
-					f_str += wrap(flip*c*m)
-				else: 
-					if flip*c > 0:
-						f_str += " + " + wrap(flip*f.monomial_coefficient(m)*m)
-					else:
-						f_str += " - " + wrap(-flip*f.monomial_coefficient(m)*m)
-			if e > 1:
-				if latex:
-					f_str = f"({f_str})^{{{e}}}"
+		factors = [(numer, 1)]
+		unit = 1
+	n_str = ""
+	for f, e in factors:
+		f_str = ""
+		mon_n = f.monomials()
+		flip = 1
+		for i, m in enumerate(mon_n[::ORD]):
+			c = f.monomial_coefficient(m)
+			if i == 0:
+				if c < 0:
+					flip = -1
+					unit = (-1)**e*unit
+				f_str += wrap(flip*c*m)
+			else: 
+				if flip*c > 0:
+					f_str += " + " + wrap(flip*f.monomial_coefficient(m)*m)
 				else:
-					f_str = f"({f_str})^{e}*"
-			elif (len(factors) > 1 or unit != 1) and len(f.monomials()) != 1:
-				if latex:
-					f_str = f"({f_str})"
-				else:
-					f_str = f"({f_str})*"
-			n_str += f_str
-		if n_str[-1] == "*":
-			n_str = n_str[:-1]
-		if unit != 1:
-			if unit == -1:
-				n_str = "-" + n_str
+					f_str += " - " + wrap(-flip*f.monomial_coefficient(m)*m)
+		if e > 1:
+			if len(mon_n) != 1:
+				f_str = f"({f_str})"
+			if latex:
+				f_str = f"{f_str}^{{{e}}}"
 			else:
-				if latex:
-					n_str = f"{wrap(unit)}{n_str}"
-				else:
-					n_str = f"{wrap(unit)}*{n_str}"
-		if not latex and check_parenth(factors, unit, B.denominator()):
-			n_str = f"({n_str})"
-	varbs = B._ring.gens()
+				f_str = f"{f_str}^{e}*"
+		elif (len(factors) > 1 or unit != 1) and len(f.monomials()) != 1:
+			if latex:
+				f_str = f"({f_str})"
+			else:
+				f_str = f"({f_str})*"
+		n_str += f_str
+	if n_str[-1] == "*":
+		n_str = n_str[:-1]
+	if unit != 1:
+		if unit == -1:
+			n_str = "-" + n_str
+		else:
+			if latex:
+				n_str = f"{wrap(unit)}{n_str}"
+			else:
+				n_str = f"{wrap(unit)}*{n_str}"
+	if len(factors) == 1 and factors[0][1] == 1 and len(factors[0][0].monomials()) > 1:
+		n_str = f"({n_str})"
+	return n_str
+
+# Given data, return the formatted denominator as a string.
+def _format_denominator(R, sig:dict, latex:bool) -> str:
+	if latex:
+		wrap = lambda X: LaTeX(X)
+	else:
+		wrap = lambda X: str(X)
+	varbs = R.gens()
 	mon = lambda v: prod(x**e for x, e in zip(varbs, v))
+	mono_factor = mon(sig["monomial"])
 	d_str = ""
-	if B._d_sig["monomial"] != 1:
-		d_str += wrap(B._d_sig["monomial"])
-		if len(B._d_sig["factors"]) > 0 and not latex:
+	if sig["coefficient"] != 1:
+		d_str += wrap(sig["coefficient"])
+		if (len(sig["factors"]) > 0 or mono_factor != 1) and not latex:
 			d_str += "*"
-	gp_list = list(B._d_sig["factors"].items())
+	if mono_factor != 1:
+		d_str += wrap(mono_factor)
+		if len(sig["factors"]) > 0 and not latex:
+			d_str += "*"
+	gp_list = list(sig["factors"].items())
 	gp_list.sort(key=lambda x: sum(x[0]))
 	for v, e in gp_list:
 		if e == 1:
@@ -285,9 +306,16 @@ def _format(B, latex=False, factor=False):
 				d_str += f"(1 - {wrap(mon(v))})^{e}"
 		if not latex and gp_list[-1] != (v, e):
 			d_str += "*"
-	if not latex and len(gp_list) > 1:
-		d_str = "(" + d_str + ")"
-	return (n_str, d_str)
+	# Return True if and only if at least two inputs are True.
+	def at_least_two(A:bool, B:bool, C:bool) -> bool:
+		return A*B + A*C + B*C > 0
+	if at_least_two(
+		sig["coefficient"] != 1, 
+		mono_factor != 1,
+		len(gp_list) > 0
+	):
+		d_str = f"({d_str})"
+	return d_str
 
 def _format_polynomial_for_align(POLY, COLWIDTH, first=0):
 	def split_polynomial(poly):
@@ -347,7 +375,7 @@ class brat:
 			denominator_signature=None,
 			fix_denominator=True,
 			increasing_order=True,
-			negative_exponents=True,
+			negative_exponents=False,
 		):
 		if not denominator is None and denominator == 0:
 			raise ValueError("Denominator cannot be zero.")
@@ -383,7 +411,13 @@ class brat:
 		self._factor = False
 
 	def __repr__(self) -> str:
-		N, D = _format(self, factor=self._factor)
+		N = _format_numerator(
+			self._n_poly, 
+			self._factor, 
+			self.increasing_order, 
+			False
+		)
+		D = _format_denominator(self._ring, self._d_sig, False)
 		if D == "":
 			return f"{N}"
 		return f"{N}/{D}"
@@ -475,7 +509,8 @@ class brat:
 	def denominator_signature(self):
 		r"""Returns the dictionary signature for the denominator. The format of the dictionary is as follows. The keys are 
 
-		- ``monomial``: rational number,
+		- ``coefficient``: a positive integer,
+		- ``monomial``: a degree tuple,
 		- ``factors``: dictionary with keys given by vectors and values in the positive integers. 
 		
 		EXAMPLE::
@@ -598,7 +633,8 @@ class brat:
 			('1 + 2t^2 + 4t^4 + 4t^6 + 2t^8 + t^{10}',
 			'(1 - t)(1 - t^2)(1 - t^3)(1 - t^4)(1 - t^5)')
 		"""
-		N, D = _format(self, latex=True, factor=factor)
+		N = _format_numerator(self._n_poly, factor, self.increasing_order, True)
+		D = _format_denominator(self._ring, self._d_sig, True)
 		N_clean = _remove_unnecessary_braces_and_spaces(N)
 		D_clean = _remove_unnecessary_braces_and_spaces(D)
 		if split:

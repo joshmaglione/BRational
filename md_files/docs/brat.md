@@ -24,7 +24,7 @@ The (ordered) keyword arguments for `brat` are
 - `denominator_signature`: the dictionary of data for the denominator (default: `None`),
 - `fix_denominator`: whether to keep the given denominator fixed (default: `True`),
 - `increasing_order`: whether to display polynomials in increasing degree (default: `True`),
-- `negative_exponents`: whether to absorb the monomial $\bm{X}^{\beta}$ in the above denominator into the numerator (default: `True`).
+- `negative_exponents`: whether to absorb the monomial in the denominator into the numerator (default: `False`).
 
 *Additional notes*. The `denominator_signature` must be a dictionary whose keys are tuples of non-negative integers and whose keys are non-negative integers. If given a `denominator_signature`, the `numerator` will be used to determine the accepted ordered variables. [We do this by looking to its parent ring if `numerator` is a polynomial, or at the variables present if a symbolic expression.] Examples of acceptable `denominator_signature` are given in [Example 3](#example-3) and in the [denominator_signature](brat-methods.md#denominator_signature) method.
 

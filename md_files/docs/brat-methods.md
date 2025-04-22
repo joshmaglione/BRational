@@ -29,8 +29,9 @@ sage: f.denominator()
 
 Returns the dictionary signature for the denominator. The format of the dictionary is as follows. The keys are 
 
-- "monomial": dictionary with one key given by a vector and a positive integer value.
-- "factors": dictionary with keys given by vectors and values in the positive integers. 
+- "coefficient": a positive integer.
+- "monomial": a degree tuple.
+- "factors": dictionary with keys given by tuples and values in the positive integers. 
 
 #### Example 
 
