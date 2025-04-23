@@ -8,12 +8,28 @@ from sage.all import ZZ, SR, QQ, PolynomialRing, prod, vector, reduce, copy
 from sage.all import latex as LaTeX
 from .util import my_print, DEBUG
 
+# Given a polynomial and a dictionary, decide if they represent zero.
+def is_denominator_zero(den, sig) -> bool:
+	if den == 0:		# Only need to check if den is zero
+		return True
+	if sig is None:		
+		return False
+	# Now we need to check that sig makes sense.
+	if "coefficient" in sig.keys():
+		if sig["coefficient"] == 0:
+			return True
+	if "factors" in sig.keys():
+		return any(map(
+			lambda v: list(v) == [0]*len(v), sig["factors"].values()
+		))
+	return False
+
 # Given a polynomial f, decide if f is a finite geometric progression. If it is
 # not, raise an error. This is because we assume our rational functions can be
 # written as a product of factors of the form (1 - M_i), where M_i is a
 # monomial. The function returns a triple (k, r, n) where 
 #	f = k(1 - r^n)/(1 - r). 
-def _is_finite_gp(f):
+def is_finite_gp(f):
 	m = f.monomials()
 	if len(m) == 1:
 		return (f.monomial_coefficient(m[0]), f.parent()(1), 1)
@@ -46,10 +62,19 @@ def get_poly(f, P):
 		my_print(DEBUG, f"Cannot build polynomial. Given\n\t{f=} of type {type(f)}\n\t{P=} of type {type(P)}")
 		raise TypeError("Numerator must be a polynomial.")
 
+# Given a denominator signature, determine if it represents an integer.
+def is_sig_integral(sig:dict) -> bool:
+	if sig is None:
+		return True
+	if sig["factors"] != {}:
+		return False
+	v = list(sig["monomial"])
+	return bool(v == [0]*(len(v)))
+
 # Given the polynomial ring R and signature sig, multiply all suitable factors
 # together. Here, suitable is determined by exp_func. By default, everything is
 # suitable.
-def _unfold_signature(R, sig, exp_func=lambda _: True):
+def unfold_signature(R, sig, exp_func=lambda _: True):
 	varbs = R.gens()
 	mon = lambda v: R(prod(x**e for x, e in zip(varbs, v)))
 	if not "monomial" in sig:
@@ -65,7 +90,7 @@ def _unfold_signature(R, sig, exp_func=lambda _: True):
 
 # Given the polynomial ring R, the numerator N, and the denominator D, construct
 # the denominator signature.
-def _get_signature(R, N, D):
+def get_signature(R, N, D):
 	varbs = R.gens()
 	def deg(m):
 		try: 
@@ -100,7 +125,7 @@ def _get_signature(R, N, D):
 			my_print(DEBUG, f"const: {const}", 2)
 		else:
 			my_print(DEBUG, f"Polynomial: {f} -- is not GP", 1)
-			k, r, n = _is_finite_gp(f)
+			k, r, n = is_finite_gp(f)
 			my_print(DEBUG, f"data: ({k}, {r}, {n})", 2)
 			r_num, r_den = R(r.numerator()), R(r.denominator())
 			const *= k
@@ -128,7 +153,7 @@ def _get_signature(R, N, D):
 	pos_facts_cleaned = R.one()
 	for n_mon, e in list(pos_facts.factor()):
 		my_print(DEBUG, f"Polynomial: {n_mon}", 1)
-		k, r, n = _is_finite_gp(n_mon)
+		k, r, n = is_finite_gp(n_mon)
 		my_print(DEBUG, f"data: ({k}, {r}, {n})", 2)
 		r_num, r_den = R(r.numerator()), R(r.denominator())
 		if r_num.monomial_coefficient(r_num.monomials()[0]) > 0:
@@ -146,10 +171,10 @@ def _get_signature(R, N, D):
 				gp_factors[v] = e
 		else:
 			pos_facts_cleaned *= n_mon**e
-	N_form = N*pos_facts_cleaned*_unfold_signature(
+	N_form = N*pos_facts_cleaned*unfold_signature(
 		R, {"factors": gp_factors}, lambda e: e < 0
 	)
-	D_form = const*_unfold_signature(
+	D_form = const*unfold_signature(
 		R, {"factors": gp_factors}, lambda e: e > 0
 	)
 	if N_form/D_form != N/D:	# Most important check!
@@ -171,30 +196,46 @@ def _get_signature(R, N, D):
 	})
 
 # Given data, determine the polynomial ring, the numerator and the denominator.
-def _process_input(num, dem=None, sig=None, fix=True):
+def process_input(num, dem=None, sig=None, fix=True):
+	if sig and sig["coefficient"] < 0:
+		num *= -1 
+		sig["coefficient"] *= -1
 	if dem is None:
 		R = num
 	else:
 		R = num/dem
-	if R in QQ and (dem is None or dem in QQ) and (sig is None or sig["factors"] == {}):
-		if fix:
-			return (QQ, num, {
-				"coefficient": dem, 
+	if R in QQ:
+		if dem is None and is_sig_integral(sig):
+			if fix:
+				return (QQ, num, sig)
+			R /= sig["coefficient"]
+			return (QQ, R.numerator(), {
+				"coefficient": R.denominator(), 
 				"monomial": (), 
 				"factors": {}
 			})
-		return (QQ, R.numerator(), {
-			"coefficient": R.denominator(), 
-			"monomial": (), 
-			"factors": {}
-		})
+		if dem in QQ:
+			if fix:
+				if dem < 0:
+					num *= -1
+					dem *= -1
+				return (QQ, num, {
+					"coefficient": dem, 
+					"monomial": (), 
+					"factors": {}
+				})
+			return (QQ, R.numerator(), {
+				"coefficient": R.denominator(), 
+				"monomial": (), 
+				"factors": {}
+			})
 	try:	# Not sure how best to do this. Argh!
 		varbs = (R.numerator()*R.denominator()).parent().gens()
 	except AttributeError and RuntimeError:
 		varbs = R.variables()
 	P = PolynomialRing(QQ, varbs)
 	if dem is None:		# Then we are given a signature
-		dem = _unfold_signature(P, sig)
+		dem = unfold_signature(P, sig)
 	# Determine the polynomial expressions for the numerator and denominator.
 	if fix:
 		N = get_poly(num, P)
@@ -202,15 +243,15 @@ def _process_input(num, dem=None, sig=None, fix=True):
 	else: 
 		N = get_poly(R.numerator(), P)
 		D = get_poly(R.denominator(), P)
-	if sig is None:
-		N_new, D_sig = _get_signature(P, P(N), P(D))
+	if sig is None or not fix:
+		N_new, D_sig = get_signature(P, P(N), P(D))
 	else:
 		D_sig = sig
 		N_new = N
 	return (P, N_new, D_sig)
 
 # The length of the function name is unnecessarily long.
-def _remove_unnecessary_braces_and_spaces(latex_text):
+def remove_unnecessary_braces_and_spaces(latex_text):
 	import re
 	patt_braces = re.compile(r'[\^\_]\{.\}')
 	patt_spaces = re.compile(r'[0-9] [a-zA-Z0-9]')
@@ -227,7 +268,7 @@ def _remove_unnecessary_braces_and_spaces(latex_text):
 	return reduce(lambda x, y: y[0].sub(y[1], x), pairs, latex_text)
 
 # Given data, format the numerator. Returns the formatted numerator as a string.
-def _format_numerator(numer, factor:bool, inc_ord:bool, latex:bool) -> str:
+def format_numerator(numer, factor:bool, inc_ord:bool, latex:bool) -> str:
 	ORD = -1 if inc_ord else 1
 	if latex:
 		wrap = lambda X: LaTeX(X)
@@ -286,7 +327,7 @@ def _format_numerator(numer, factor:bool, inc_ord:bool, latex:bool) -> str:
 	return n_str
 
 # Given data, return the formatted denominator as a string.
-def _format_denominator(R, sig:dict, latex:bool) -> str:
+def format_denominator(R, sig:dict, latex:bool) -> str:
 	if latex:
 		wrap = lambda X: LaTeX(X)
 	else:
@@ -326,7 +367,7 @@ def _format_denominator(R, sig:dict, latex:bool) -> str:
 		d_str = f"({d_str})"
 	return d_str
 
-def _format_polynomial_for_align(POLY, COLWIDTH, first=0):
+def format_polynomial_for_align(POLY, COLWIDTH, first=0):
 	def split_polynomial(poly):
 		terms = []
 		i = 0
@@ -381,45 +422,61 @@ class brat:
 			rational_expression=None, 
 			numerator=None, 
 			denominator=None,
-			denominator_signature=None,
-			fix_denominator=True,
-			increasing_order=True,
-			negative_exponents=False,
+			denominator_signature:dict=None,
+			fix_denominator:bool=True,
+			increasing_order:bool=True,
+			negative_exponents:bool=False,
 		):
-		if not denominator is None and denominator == 0:
+		# First we remove zero denominator
+		if is_denominator_zero(denominator, denominator_signature):
 			raise ValueError("Denominator cannot be zero.")
-		if not rational_expression is None:
-			if isinstance(rational_expression, int):
-				rational_expression = ZZ(rational_expression)
-			if isinstance(rational_expression, float):
-				try:
-					rational_expression = QQ(rational_expression)
-				except TypeError:
-					raise TypeError("Input must be a rational function.")
+		
+		# int and float can be problematic
+		if isinstance(rational_expression, int):
+			rational_expression = ZZ(rational_expression)
+		if isinstance(numerator, int):
+			numerator = ZZ(numerator)
+		if isinstance(denominator, int):
+			denominator = ZZ(denominator)
+		if isinstance(rational_expression, float):
+			try:
+				rational_expression = QQ(rational_expression)
+			except TypeError:
+				raise TypeError("Input must be a rational function.")
+		
+		# Sort through the input and raise potential errors
+		if rational_expression is not None:
+			# rational_expression is given
 			try:
 				N = rational_expression.numerator()
 				D = rational_expression.denominator()
 			except AttributeError:
 				raise TypeError("Input must be a rational function.")
 		else: 
-			if numerator is None or (denominator is None and denominator_signature is None):
-				raise ValueError("Must provide a numerator and denominator.")
+			# rational_expression is not given
+			if numerator is None:
+				raise ValueError("Must provide a numerator.")
+			if denominator is None and denominator_signature is None:
+				raise ValueError("Must provide a denominator.")
 			N = numerator
 			if denominator is None:
 				if not isinstance(denominator_signature, dict):
 					raise TypeError("Denominator signature must be a dictionary.")
-				if not "factors" in denominator_signature:
-					denominator_signature = {"factors": denominator_signature}
+				if any(k not in ["coefficient", "monomial", "factors"] for k in denominator_signature.keys()):
+					raise ValueError("Denominator signature contains an unexpected key.")
 				D = None
 			else:
 				D = denominator
-		my_print(DEBUG, f"Given\n\tNumerator: {N}\n\tDenominator: {D}")
-		T = _process_input(
+		
+		# Finally process the input
+		my_print(DEBUG, f"Given\n\tNumerator: {N}\n\tDenominator: {D}\n\tSignature: {denominator_signature}")
+		T = process_input(
 			N, 
 			dem=D, 
 			sig=denominator_signature, 
 			fix=fix_denominator
 		)
+		my_print(DEBUG, f"Output of _process_intput:\n\t{T}")
 		self._ring = T[0]			# Parent ring for rational function
 		self._n_poly = T[1]			# Numerator polynomial
 		self._d_sig = T[2]			# Denominator with form \prod_i (1 - M_i)
@@ -428,13 +485,13 @@ class brat:
 		self._factor = False
 
 	def __repr__(self) -> str:
-		N = _format_numerator(
+		N = format_numerator(
 			self._n_poly, 
 			self._factor, 
 			self.increasing_order, 
 			False
 		)
-		D = _format_denominator(self._ring, self._d_sig, False)
+		D = format_denominator(self._ring, self._d_sig, False)
 		if D == "":
 			return f"{N}"
 		return f"{N}/{D}"
@@ -521,7 +578,7 @@ class brat:
 			sage: f.denominator()
 			-x^2*y^4 + 1
 		"""
-		return _unfold_signature(self._ring, self._d_sig)
+		return unfold_signature(self._ring, self._d_sig)
 
 	def denominator_signature(self):
 		r"""Returns the dictionary signature for the denominator. The format of the dictionary is as follows. The keys are 
@@ -583,7 +640,7 @@ class brat:
 			raise TypeError("Signature must be a dictionary.")
 		if not "factors" in signature:
 			signature = {"factors": signature}
-		expr = _unfold_signature(self._ring, signature)
+		expr = unfold_signature(self._ring, signature)
 		new_numer = self._ring(self._n_poly*expr/self.denominator())
 		if not new_numer.denominator() in ZZ:
 			raise ValueError("New denominator must be a multiple of the old one.")
@@ -650,10 +707,10 @@ class brat:
 			('1 + 2t^2 + 4t^4 + 4t^6 + 2t^8 + t^{10}',
 			'(1 - t)(1 - t^2)(1 - t^3)(1 - t^4)(1 - t^5)')
 		"""
-		N = _format_numerator(self._n_poly, factor, self.increasing_order, True)
-		D = _format_denominator(self._ring, self._d_sig, True)
-		N_clean = _remove_unnecessary_braces_and_spaces(N)
-		D_clean = _remove_unnecessary_braces_and_spaces(D)
+		N = format_numerator(self._n_poly, factor, self.increasing_order, True)
+		D = format_denominator(self._ring, self._d_sig, True)
+		N_clean = remove_unnecessary_braces_and_spaces(N)
+		D_clean = remove_unnecessary_braces_and_spaces(D)
 		if split:
 			return (f"{N_clean}", f"{D_clean}")
 		return f"\\dfrac{{{N_clean}}}{{{D_clean}}}"
@@ -814,7 +871,7 @@ class brat:
 		else:
 			function_name = ""
 		if align:
-			func = _format_polynomial_for_align(func, line_width, first=len(function_name))
+			func = format_polynomial_for_align(func, line_width, first=len(function_name))
 			output = f"\\begin{{align*}}\n\t{function_name}{func}\n\\end{{align*}}"
 		else:
 			output = f"\\[\n\t{function_name}{func}\n\\]"
