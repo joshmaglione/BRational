@@ -48,6 +48,22 @@ def test_polynomials():
 	x = var('x')
 	assert str(brat(x + 1)) == "1 + x"
 	assert str(brat(x**2 - 1 - x)) == "-(1 + x - x^2)"
+	assert str(brat(1 + 2*x + x*x)) == "1 + 2*x + x^2"
+	assert str(brat(1 + 2*x + x*x).factor()) == "(1 + x)^2"
+	assert str(brat(3 + x - x**4, increasing_order=False)) == "-(x^4 - x - 3)"
+	assert str(brat(x + 1/2)) == "(1 + 2*x)/2"
+	assert str(brat((x**2 - 1 - x)/4)) == "-(1 + x - x^2)/4"
+	assert str(brat((1 + 2*x + x*x)/6)) == "(1 + 2*x + x^2)/6"
+	assert str(brat((1 + 2*x + x*x)/6).factor()) == "(1 + x)^2/6"
+	assert str(brat(3 + x - x**4/2, increasing_order=False)) == "-(x^4 - 2*x - 6)/2"
+	q, t = polygens(QQ, ('q', 't'))
+	assert str(brat(q**2 + 2*q*t + t**2)) == "t^2 + 2*q*t + q^2"
+	assert str(brat(q**2 + 2*q*t + t**2, increasing_order=False)) == "q^2 + 2*q*t + t^2"
+	assert str(brat(q**2 + 2*q*t + t**2).factor()) == "(t + q)^2"
+	assert str(brat(q**2 + 2*q*t + t**2, increasing_order=False).factor()) == "(q + t)^2"
+
+
+
 
 def main():
 	test_integers()

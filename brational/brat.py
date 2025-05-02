@@ -24,18 +24,21 @@ def is_denominator_zero(den, sig) -> bool:
 		))
 	return False
 
-# Given two monomials f and g, determine if f/g or g/f is preferred.
+# Given two monomials f and g, determine if f/g is preferred.
 def is_preferred(f, g) -> bool:
 	P = f.parent()
 	assert g in P
 	if len(P.gens()) == 1:
+		return f.degree() >= g.degree()
+	degs = [f.degree(x) - g.degree(x) for x in P.gens()]
+	if all(map(lambda d: d <= 0, degs)):
+		return False
+	if all(map(lambda d: d >= 0, degs)):
 		return True
-	degs = []
-	for x in P.gens():
-		if f.degree(x) >= g.degree(x):
-			degs.append(f.degree(x) - g.degree(x))
-		if f.degree(x) < g.degree(x):
-			return degs == [0]*len(degs)
+	i = 0
+	while degs[i] == 0:
+		i += 1
+	return degs[i] < 0 
 
 # Given a polynomial f with at least two monomials, decide if f is a finite
 # geometric progression. If it is not, raise an error. This is because we assume
@@ -96,7 +99,7 @@ def is_sig_integral(sig:dict) -> bool:
 # suitable.
 def unfold_signature(R, sig, exp_func=lambda _: True):
 	varbs = R.gens()
-	mon = lambda v: R(prod(x**e for x, e in zip(varbs, v)))
+	mon = lambda v: prod(x**e for x, e in zip(varbs, v))
 	if not "monomial" in sig:
 		zero = tuple([0]*len(varbs))
 		sig.update({"monomial": zero})
@@ -119,13 +122,12 @@ def get_signature(R, N, D):
 			"factors": {},
 		})
 	varbs = R.gens()
-	def deg(m):
-		try: 
-			return vector(ZZ, [m.degree(v) for v in varbs])
-		except TypeError:
-			return vector(ZZ, [m.degree() for _ in varbs])
-	mon = lambda v: R(prod(x**e for x, e in zip(varbs, v)))
-	D_factors = list(D.factor())		# all factors in denominator
+	if len(varbs) == 1: 
+		deg = lambda m: vector(ZZ, [m.degree()])
+	else:
+		deg = lambda m: vector(ZZ, [m.degree(v) for v in varbs])
+	mon = lambda v: prod(x**e for x, e in zip(varbs, v))
+	D_factors = list(D.factor())		# all factors in denominator no unit
 	gp_factors = {}						# all geometric progressions
 	pos_facts = R(1)					# all factors to go to numerator
 	const = D.factor().unit()			# the monomial
@@ -133,7 +135,7 @@ def get_signature(R, N, D):
 	my_print(DEBUG, f"Denominator:\n\t{D_factors}")
 	my_print(DEBUG, f"Monomial:\n\t{const}")
 	while len(D_factors) > 0:
-		f, e = D_factors[0]
+		f, e = D_factors.pop(0)
 		m_f = f.monomials()
 		if len(m_f) == 2 and prod(f.coefficients()) < 0:
 			my_print(DEBUG, f"Polynomial: {f} -- is GP", 1)
@@ -150,9 +152,13 @@ def get_signature(R, N, D):
 				gp_factors[v] += e
 			else:
 				gp_factors[v] = e
-			if f.monomial_coefficient(m_f[pos]) < 0:
-				my_print(DEBUG, f"const: {(-1)**e}", 2)
-				const *= (-1)**e
+			# if f.monomial_coefficient(m_f[pos]) < 0:
+			my_print(
+				DEBUG, 
+				f"const: {(f.monomial_coefficient(m_f[pos])*m_f[pos])**e}", 
+				2
+			)
+			const *= (f.monomial_coefficient(m_f[pos])*m_f[pos])**e
 		elif len(m_f) == 1:
 			my_print(DEBUG, f"Polynomial: {f} -- a monomial", 1)
 			const *= f**e
@@ -180,7 +186,6 @@ def get_signature(R, N, D):
 				my_print(DEBUG, f"Pushing: (1 + {(-r)**n}, {e})", 2)
 				D_factors.append(((r_den**n + (-r_num)**n), e))
 				pos_facts *= (r_den - r_num)**e
-		D_factors = D_factors[1:]
 	my_print(DEBUG, f"Final factors: {gp_factors}", 1)
 	my_print(DEBUG, f"Accumulated factors: {pos_facts}", 1)
 	# Clean up the monomial a little bit. 
@@ -245,7 +250,7 @@ def process_input(num, dem=None, sig=None, fix=True):
 		if dem is None and is_sig_integral(sig):
 			# Implies num in QQ
 			if fix:
-				if sig["cofficient"] == 1:
+				if sig["coefficient"] == 1:
 					return (QQ, num, sig, brat_type("i"))
 				return (QQ, num, sig, brat_type("r"))
 			R /= sig["coefficient"]
@@ -491,33 +496,31 @@ def format_factored_numerator(
 
 # Given data, return the formatted denominator as a string.
 def format_denominator(R, sig:dict, latex:bool) -> str:
-	from util import at_least_two
-	if latex:
-		wrap = lambda X: LaTeX(X)
-	else:
-		wrap = lambda X: str(X)
-	varbs = R.gens()
-	mon = lambda v: prod(x**e for x, e in zip(varbs, v))
-	mono_factor = mon(sig["monomial"])
+	from .util import at_least_two
+	def wrap(v:tuple[int]):
+		mono = prod(x**e for x, e in zip(R.gens(), v) if e > 0)
+		neg = prod(x**(-e) for x, e in zip(R.gens(), v) if e < 0)
+		return stringify(R, R(1), mono, neg, latex)
+	mono_factor = prod(x**e for x, e in zip(R.gens(), sig["monomial"]))
 	d_str = ""
 	if sig["coefficient"] != 1:
-		d_str += wrap(sig["coefficient"])
+		d_str += stringify(R, sig["coefficient"], R(1), R(1), latex)
 		if (len(sig["factors"]) > 0 or mono_factor != 1) and not latex:
 			d_str += "*"
 	if mono_factor != 1:
-		d_str += wrap(mono_factor)
+		d_str += stringify(R, R(1), mono_factor, R(1), latex)
 		if len(sig["factors"]) > 0 and not latex:
 			d_str += "*"
 	gp_list = list(sig["factors"].items())
 	gp_list.sort(key=lambda x: sum(x[0]))
 	for v, e in gp_list:
 		if e == 1:
-			d_str += f"(1 - {wrap(mon(v))})"
+			d_str += f"(1 - {wrap(v)})"
 		else:
 			if latex:
-				d_str += f"(1 - {wrap(mon(v))})^{{{e}}}"
+				d_str += f"(1 - {wrap(v)})^{{{e}}}"
 			else:
-				d_str += f"(1 - {wrap(mon(v))})^{e}"
+				d_str += f"(1 - {wrap(v)})^{e}"
 		if not latex and gp_list[-1] != (v, e):
 			d_str += "*"
 	
@@ -587,7 +590,7 @@ class brat:
 			denominator_signature:dict=None,
 			fix_denominator:bool=True,
 			increasing_order:bool=True,
-			negative_exponents:bool=False,
+			negative_exponents:bool=True,
 		):
 		# First we remove zero denominator
 		if is_denominator_zero(denominator, denominator_signature):
@@ -648,55 +651,72 @@ class brat:
 		self._factor = False
 
 	def __str__(self) -> str:
+		if self._factor:
+			numerator = format_factored_numerator
+		else:
+			numerator = format_numerator
+		my_print(DEBUG, f"Printing with type {self._type.name}")
+
 		# Rational number
-		if self._type == "i":
+		if self._type.value == "i":
 			return f"{self._n_poly}"
-		if self._type == "r":
+		if self._type.value == "r":
 			return f'{self._n_poly}/{self._d_sig["coefficient"]}'
 		
 		# Polynomial
-		if self._type in ["ip", "rp"]:
-			N = format_numerator(
-				self._n_poly, 
-				self._ring,
+		if self._type.value in ["ip", "rp"]:
+			N = numerator(
+				self._n_poly,
 				self._ring(1),
-				self._factor,
 				self.increasing_order,
 				False,
 			)
-			if self._type == "ip":
+			if self._type.value == "ip":
 				return f"{N}"
-			if N[0] == "(" and N[-1] == ")":
+			if N[0] == "(" or N[-1] == ")":
 				return f'{N}/{self._d_sig["coefficient"]}'
 			return f'({N})/{self._d_sig["coefficient"]}'
 		
 		# Laurent polynomial
-		if self._type in ["ilp", "rlp"] and self.negative_exponents:
-			monomial = unfold_signature(self._ring, self._d_sig)
-			monomial /= self._d_sig["coefficient"]
-			N = format_numerator(
+		if self._type.value in ["ilp", "rlp"] and self.negative_exponents:
+			vars_vec = zip(self._ring.gens(), self._d_sig["monomial"])
+			monomial = prod(x**e for x, e in vars_vec)
+			N = numerator(
 				self._n_poly,
-				self._ring,
 				monomial,
-				self._factor,
 				self.increasing_order,
 				False,
 			)
-			if self._type == "ilp":
+			if self._type.value == "ilp":
 				return f"{N}"
-			if N[0] == "(" and N[-1] == ")":
+			if N[0] == "(" or N[-1] == ")":
 				return f'{N}/{self._d_sig["coefficient"]}'
 			return f'({N})/{self._d_sig["coefficient"]}'
 
 		# Rational function
 		if self.negative_exponents:
-			None
+			vars_vec = zip(self._ring.gens(), self._d_sig["monomial"])
+			monomial = prod(x**e for x, e in vars_vec)
+			N = numerator(
+				self._n_poly,
+				monomial,
+				self.increasing_order,
+				False,
+			)
+			sig = self._d_sig
+			sig["monomial"] = tuple([0]*len(self._ring.gens()))
 		else:
-			...
-		D = format_denominator(self, False)
-		if D == "":
-			return f"{N}"
-		return f"{N}/{D}"
+			N = numerator(
+				self._n_poly,
+				self._ring(1),
+				self.increasing_order,
+				False,
+			)
+			sig = self._d_sig
+		D = format_denominator(self._ring, sig, False)
+		if N[0] == '(' or N[-1] == ')':
+			return f"{N}/{D}"
+		return f"({N})/{D}"
 	
 	def __repr__(self) -> str:
 		return str(self)
