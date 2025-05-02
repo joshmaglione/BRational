@@ -1,5 +1,5 @@
 from brational import brat
-from sage.all import ZZ, QQ, polygens
+from sage.all import ZZ, QQ, polygens, var
 
 def test_integers():
 	assert str(brat(int(1))) == "1"
@@ -43,9 +43,16 @@ def test_rationals():
 	assert str(brat(numerator=ZZ(5), denominator=ZZ(-10), fix_denominator=True)) == "-5/10"
 	assert str(brat(numerator=ZZ(5), denominator=ZZ(-10), fix_denominator=False)) == "-1/2"
 
+
+def test_polynomials():
+	x = var('x')
+	assert str(brat(x + 1)) == "1 + x"
+	assert str(brat(x**2 - 1 - x)) == "-(1 + x - x^2)"
+
 def main():
 	test_integers()
 	test_rationals()
+	test_polynomials()
 	print("All tests passed!")
 
 if __name__ == "__main__":
