@@ -18,6 +18,11 @@ def my_print(on:bool, string:str, level:int=0):
 def at_least_two(A:bool, B:bool, C:bool) -> bool:
     return A*B + A*C + B*C > 0
 
+# Given an expression for a numerator, determine if we need to wrap with
+# parentheses.
+def parenthesis_wrap(expr:str) -> str:
+    ... 
+
 class brat_type(Enum):      
     #                           p.d. = positive degree 
     #                           n.d. = non-negative degree

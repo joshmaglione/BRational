@@ -1,15 +1,23 @@
 from brational import brat
-from sage.all import ZZ, QQ, polygens, var
+from sage.all import ZZ, QQ, polygens, var, polygen
 
 def test_integers():
 	assert str(brat(int(1))) == "1"
 	assert str(brat(int(0))) == "0"
 	assert str(brat(int(-1))) == "-1"
+	assert str(brat(int(1)).latex()) == "1"
+	assert str(brat(int(0)).latex()) == "0"
+	assert str(brat(int(-1)).latex()) == "-1"
 	assert str(brat(ZZ(1))) == "1"
 	assert str(brat(ZZ(0))) == "0"
 	assert str(brat(ZZ(-1))) == "-1"
 	assert str(brat(ZZ(4))) == "4"
 	assert str(brat(ZZ(-12))) == "-12"
+	assert str(brat(ZZ(1)).latex()) == "1"
+	assert str(brat(ZZ(0)).latex()) == "0"
+	assert str(brat(ZZ(-1)).latex()) == "-1"
+	assert str(brat(ZZ(4)).latex()) == "4"
+	assert str(brat(ZZ(-12)).latex()) == "-12"
 	assert str(brat(numerator=ZZ(-12), denominator=int(3), fix_denominator=False)) == "-4"
 	assert str(brat(numerator=ZZ(12), denominator=int(-3), fix_denominator=False)) == "-4"
 	assert str(brat(ZZ(4)).factor()) == "4"
@@ -59,16 +67,26 @@ def test_polynomials():
 	q, t = polygens(QQ, ('q', 't'))
 	assert str(brat(q**2 + 2*q*t + t**2)) == "t^2 + 2*q*t + q^2"
 	assert str(brat(q**2 + 2*q*t + t**2, increasing_order=False)) == "q^2 + 2*q*t + t^2"
+	assert str(brat((q**2 + 2*q*t + t**2)/60)) == "(t^2 + 2*q*t + q^2)/60"
+	assert str(brat((q**2 + 2*q*t + t**2)/60, increasing_order=False)) == "(q^2 + 2*q*t + t^2)/60"
 	assert str(brat(q**2 + 2*q*t + t**2).factor()) == "(t + q)^2"
 	assert str(brat(q**2 + 2*q*t + t**2, increasing_order=False).factor()) == "(q + t)^2"
+	assert str(brat((q**2 + 2*q*t + t**2)/6).factor()) == "(t + q)^2/6"
+	assert str(brat((q**2 + 2*q*t + t**2)/6, increasing_order=False).factor()) == "(q + t)^2/6"
 
 
+def test_laurent_polynomials():
+	x = polygen(QQ, 'x')
+	assert str(brat(x + 1/x)) == "x^-1 + x"
+	assert str(brat((1 + 2*x + x**2)/x**6)) == "x^-6 + 2*x^-5 + x^-4"
+	assert str(brat((1 + 2*x + x**2)/x**6).factor()) == "x^-6*(1 + x)^2"
 
 
 def main():
 	test_integers()
 	test_rationals()
 	test_polynomials()
+	test_laurent_polynomials()
 	print("All tests passed!")
 
 if __name__ == "__main__":

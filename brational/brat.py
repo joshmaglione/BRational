@@ -484,8 +484,8 @@ def format_factored_numerator(
 		n_str += f_str
 	if n_str[-1] == "*":
 		n_str = n_str[:-1]
-	if unit != 1:
-		if unit == -1:
+	if unit*neg != 1:
+		if unit*neg == -1:
 			n_str = "-" + n_str
 		else:
 			if latex:
@@ -562,6 +562,72 @@ def format_polynomial_for_align(POLY, COLWIDTH, first=0):
 		output_lines.append(current_line)
 	output_string = " \\\\ \n\t&\\quad ".join(output_lines)
 	return output_string
+
+def brat_to_str(B, latex=False) -> str:
+	if B._factor:
+		numerator = format_factored_numerator
+	else:
+		numerator = format_numerator
+	if latex:
+		quo = lambda n, d: f"\\dfrac{{{n}}}@{{{d}}}"
+	else:
+		quo = lambda n, d: f"{n}/{d}"
+	my_print(DEBUG, f"Printing with type {B._type.name}")
+
+	# Rational number
+	if B._type.value == "i":
+		return f"{B._n_poly}"
+	if B._type.value == "r":
+		return quo(B._n_poly, B._d_sig["coefficient"])
+	
+	# Polynomial
+	if B._type.value in ["ip", "rp"]:
+		N = numerator(
+			B._n_poly,
+			B._ring(1),
+			B.increasing_order,
+			False,
+		)
+		if B._type.value == "ip":
+			return f"{N}"
+		return quo(N, B._d_sig["coefficient"])
+	
+	# Laurent polynomial
+	if B._type.value in ["ilp", "rlp"] and B.negative_exponents:
+		vars_vec = zip(B._ring.gens(), B._d_sig["monomial"])
+		monomial = prod(x**e for x, e in vars_vec)
+		N = numerator(
+			B._n_poly,
+			monomial,
+			B.increasing_order,
+			False,
+		)
+		if B._type.value == "ilp":
+			return f"{N}"
+		return quo(N, B._d_sig["coefficient"])
+
+	# Rational function
+	if B.negative_exponents:
+		vars_vec = zip(B._ring.gens(), B._d_sig["monomial"])
+		monomial = prod(x**e for x, e in vars_vec)
+		N = numerator(
+			B._n_poly,
+			monomial,
+			B.increasing_order,
+			False,
+		)
+		sig = B._d_sig
+		sig["monomial"] = tuple([0]*len(B._ring.gens()))
+	else:
+		N = numerator(
+			B._n_poly,
+			B._ring(1),
+			B.increasing_order,
+			False,
+		)
+		sig = B._d_sig
+	D = format_denominator(B._ring, sig, False)
+	return quo(N, D)
 
 # The main class of BRational.
 class brat:
@@ -651,75 +717,10 @@ class brat:
 		self._factor = False
 
 	def __str__(self) -> str:
-		if self._factor:
-			numerator = format_factored_numerator
-		else:
-			numerator = format_numerator
-		my_print(DEBUG, f"Printing with type {self._type.name}")
-
-		# Rational number
-		if self._type.value == "i":
-			return f"{self._n_poly}"
-		if self._type.value == "r":
-			return f'{self._n_poly}/{self._d_sig["coefficient"]}'
-		
-		# Polynomial
-		if self._type.value in ["ip", "rp"]:
-			N = numerator(
-				self._n_poly,
-				self._ring(1),
-				self.increasing_order,
-				False,
-			)
-			if self._type.value == "ip":
-				return f"{N}"
-			if N[0] == "(" or N[-1] == ")":
-				return f'{N}/{self._d_sig["coefficient"]}'
-			return f'({N})/{self._d_sig["coefficient"]}'
-		
-		# Laurent polynomial
-		if self._type.value in ["ilp", "rlp"] and self.negative_exponents:
-			vars_vec = zip(self._ring.gens(), self._d_sig["monomial"])
-			monomial = prod(x**e for x, e in vars_vec)
-			N = numerator(
-				self._n_poly,
-				monomial,
-				self.increasing_order,
-				False,
-			)
-			if self._type.value == "ilp":
-				return f"{N}"
-			if N[0] == "(" or N[-1] == ")":
-				return f'{N}/{self._d_sig["coefficient"]}'
-			return f'({N})/{self._d_sig["coefficient"]}'
-
-		# Rational function
-		if self.negative_exponents:
-			vars_vec = zip(self._ring.gens(), self._d_sig["monomial"])
-			monomial = prod(x**e for x, e in vars_vec)
-			N = numerator(
-				self._n_poly,
-				monomial,
-				self.increasing_order,
-				False,
-			)
-			sig = self._d_sig
-			sig["monomial"] = tuple([0]*len(self._ring.gens()))
-		else:
-			N = numerator(
-				self._n_poly,
-				self._ring(1),
-				self.increasing_order,
-				False,
-			)
-			sig = self._d_sig
-		D = format_denominator(self._ring, sig, False)
-		if N[0] == '(' or N[-1] == ')':
-			return f"{N}/{D}"
-		return f"({N})/{D}"
+		return brat_to_str(self, latex=False)
 	
 	def __repr__(self) -> str:
-		return str(self)
+		return brat_to_str(self, latex=False)
 	
 	def __add__(self, other):
 		if isinstance(other, brat):
@@ -826,7 +827,6 @@ class brat:
 
 	def factor(self):
 		r"""Returns a new ``brat`` object with the numerator polynomial factored.
-
 		"""
 		B = copy(self)
 		B._factor = True
@@ -932,13 +932,25 @@ class brat:
 			('1 + 2t^2 + 4t^4 + 4t^6 + 2t^8 + t^{10}',
 			'(1 - t)(1 - t^2)(1 - t^3)(1 - t^4)(1 - t^5)')
 		"""
-		N = format_numerator(self._n_poly, factor, self.increasing_order, True)
-		D = format_denominator(self._ring, self._d_sig, True)
-		N_clean = remove_unnecessary_braces_and_spaces(N)
-		D_clean = remove_unnecessary_braces_and_spaces(D)
+		# N = format_numerator(self._n_poly, factor, self.increasing_order, True)
+		# D = format_denominator(self._ring, self._d_sig, True)
+		# N_clean = remove_unnecessary_braces_and_spaces(N)
+		# D_clean = remove_unnecessary_braces_and_spaces(D)
+		# if split:
+		# 	return (f"{N_clean}", f"{D_clean}")
+		# return f"\\dfrac{{{N_clean}}}{{{D_clean}}}"
+		if factor:
+			B = self.factor()
+		else:
+			B = self
+		latex_str = brat_to_str(B, True)
 		if split:
-			return (f"{N_clean}", f"{D_clean}")
-		return f"\\dfrac{{{N_clean}}}{{{D_clean}}}"
+			N, D = latex_str.split('@')
+			N = N[8:-1]
+			D = D[1:-1]
+			return (N, D)
+		return latex_str.replace('@', '')
+
 	
 	# Just for SageMath's `pretty_print` function
 	def _latex_(self):
