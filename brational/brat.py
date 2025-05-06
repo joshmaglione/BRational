@@ -4,9 +4,9 @@
 #   Distributed under MIT License
 #
 
-from sage.all import ZZ, SR, QQ, PolynomialRing, prod, vector, reduce, copy
+from sage.all import ZZ, SR, QQ, PolynomialRing, prod, vector, copy
 from sage.all import latex as LaTeX
-from .util import my_print, DEBUG, brat_type
+from .util import my_print, DEBUG, brat_type, parenthesis_wrap, remove_unnecessary_braces_and_spaces
 
 # Given a polynomial and a dictionary, decide if they represent zero.
 def is_denominator_zero(den, sig) -> bool:
@@ -344,23 +344,6 @@ def process_input(num, dem=None, sig=None, fix=True):
 	# Celebrate!
 	return (P, N_new, D_sig, br_type)
 
-# The length of the function name is unnecessarily long.
-def remove_unnecessary_braces_and_spaces(latex_text):
-	import re
-	patt_braces = re.compile(r'[\^\_]\{.\}')
-	patt_spaces = re.compile(r'[0-9] [a-zA-Z0-9]')
-	patt_spaces2 = re.compile(r'\} [a-zA-Z0-9]')
-	def remove_braces(match):
-		return f"{match.group(0)[0]}{match.group(0)[2]}"
-	def remove_spaces(match):
-		return match.group(0)[0] + match.group(0)[2]
-	pairs = [
-		(patt_braces, remove_braces), 
-		(patt_spaces, remove_spaces), 
-		(patt_spaces2, remove_spaces)
-	]
-	return reduce(lambda x, y: y[0].sub(y[1], x), pairs, latex_text)
-
 # Given variables, a vector of integers, and a latex flag, return the associated
 # monomial.
 def vec_to_mono(varbs:list[str], vec:list[int], latex:bool) -> str:
@@ -375,6 +358,8 @@ def vec_to_mono(varbs:list[str], vec:list[int], latex:bool) -> str:
 				strings.append(f"{x}^{{{vec[i]}}}")
 			else:
 				strings.append(f"{x}^{vec[i]}")
+	if latex:
+		return "".join(strings)
 	return "*".join(strings)
 
 # Given a polynomial ring, an element in the base field, and a pair of monomials
@@ -383,8 +368,10 @@ def vec_to_mono(varbs:list[str], vec:list[int], latex:bool) -> str:
 def stringify(poly_ring, coeff, mono, neg, latex:bool) -> str:
 	if latex:
 		wrap = lambda X: LaTeX(X)
+		mult = ""
 	else:
 		wrap = lambda X: str(X)
+		mult = "*"
 	if len(poly_ring.gens()) == 1:
 		deg_vec = [mono.degree() - neg.degree()]
 	else:
@@ -396,7 +383,7 @@ def stringify(poly_ring, coeff, mono, neg, latex:bool) -> str:
 		return vec_to_mono(varbs, deg_vec, latex)
 	if coeff == -1:
 		return f"-{vec_to_mono(varbs, deg_vec, latex)}"
-	return f"{coeff}*{vec_to_mono(varbs, deg_vec, latex)}"
+	return f"{coeff}{mult}{vec_to_mono(varbs, deg_vec, latex)}"
 
 # Given data, format the numerator. Returns the formatted and expanded numerator
 # as a string.
@@ -489,9 +476,9 @@ def format_factored_numerator(
 			n_str = "-" + n_str
 		else:
 			if latex:
-				n_str = f"{stringify(P, unit, P(1), neg, latex)}{n_str}"
+				n_str = f"{stringify(P, unit, P(1), P(neg), latex)}{n_str}"
 			else:
-				n_str = f"{stringify(P, unit, P(1), neg, latex)}*{n_str}"
+				n_str = f"{stringify(P, unit, P(1), P(neg), latex)}*{n_str}"
 	return n_str
 
 # Given data, return the formatted denominator as a string.
@@ -500,7 +487,7 @@ def format_denominator(R, sig:dict, latex:bool) -> str:
 	def wrap(v:tuple[int]):
 		mono = prod(x**e for x, e in zip(R.gens(), v) if e > 0)
 		neg = prod(x**(-e) for x, e in zip(R.gens(), v) if e < 0)
-		return stringify(R, R(1), mono, neg, latex)
+		return stringify(R, R(1), R(mono), R(neg), latex)
 	mono_factor = prod(x**e for x, e in zip(R.gens(), sig["monomial"]))
 	d_str = ""
 	if sig["coefficient"] != 1:
@@ -524,12 +511,14 @@ def format_denominator(R, sig:dict, latex:bool) -> str:
 		if not latex and gp_list[-1] != (v, e):
 			d_str += "*"
 	
-	if at_least_two(
+	if latex:
+		return d_str
+	if len(gp_list) > 2 or at_least_two(
 		sig["coefficient"] != 1, 
 		mono_factor != 1,
 		len(gp_list) > 0
 	):
-		d_str = f"({d_str})"
+		return f"({d_str})"
 	return d_str
 
 def format_polynomial_for_align(POLY, COLWIDTH, first=0):
@@ -571,38 +560,37 @@ def brat_to_str(B, latex=False) -> str:
 	if latex:
 		quo = lambda n, d: f"\\dfrac{{{n}}}@{{{d}}}"
 	else:
-		quo = lambda n, d: f"{n}/{d}"
+		quo = lambda n, d: f"{parenthesis_wrap(str(n))}/{d}"
 	my_print(DEBUG, f"Printing with type {B._type.name}")
 
-	# Rational number
-	if B._type.value == "i":
+	if B._type.name == "INTEGER":
 		return f"{B._n_poly}"
-	if B._type.value == "r":
+	if B._type.name == "RATIONAL":
 		return quo(B._n_poly, B._d_sig["coefficient"])
 	
 	# Polynomial
-	if B._type.value in ["ip", "rp"]:
+	if B._type.name in ["INTEGRAL_POLY", "RATIONAL_POLY"]:
 		N = numerator(
 			B._n_poly,
 			B._ring(1),
 			B.increasing_order,
-			False,
+			latex,
 		)
-		if B._type.value == "ip":
+		if B._type.name == "INTEGRAL_POLY":
 			return f"{N}"
 		return quo(N, B._d_sig["coefficient"])
 	
 	# Laurent polynomial
-	if B._type.value in ["ilp", "rlp"] and B.negative_exponents:
+	if B._type.name in ["INTEGRAL_L_POLY", "RATIONAL_L_POLY"] and B.negative_exponents:
 		vars_vec = zip(B._ring.gens(), B._d_sig["monomial"])
 		monomial = prod(x**e for x, e in vars_vec)
 		N = numerator(
 			B._n_poly,
 			monomial,
 			B.increasing_order,
-			False,
+			latex,
 		)
-		if B._type.value == "ilp":
+		if B._type.name == "INTEGRAL_L_POLY":
 			return f"{N}"
 		return quo(N, B._d_sig["coefficient"])
 
@@ -614,7 +602,7 @@ def brat_to_str(B, latex=False) -> str:
 			B._n_poly,
 			monomial,
 			B.increasing_order,
-			False,
+			latex,
 		)
 		sig = B._d_sig
 		sig["monomial"] = tuple([0]*len(B._ring.gens()))
@@ -623,10 +611,10 @@ def brat_to_str(B, latex=False) -> str:
 			B._n_poly,
 			B._ring(1),
 			B.increasing_order,
-			False,
+			latex,
 		)
 		sig = B._d_sig
-	D = format_denominator(B._ring, sig, False)
+	D = format_denominator(B._ring, sig, latex)
 	return quo(N, D)
 
 # The main class of BRational.
@@ -932,18 +920,11 @@ class brat:
 			('1 + 2t^2 + 4t^4 + 4t^6 + 2t^8 + t^{10}',
 			'(1 - t)(1 - t^2)(1 - t^3)(1 - t^4)(1 - t^5)')
 		"""
-		# N = format_numerator(self._n_poly, factor, self.increasing_order, True)
-		# D = format_denominator(self._ring, self._d_sig, True)
-		# N_clean = remove_unnecessary_braces_and_spaces(N)
-		# D_clean = remove_unnecessary_braces_and_spaces(D)
-		# if split:
-		# 	return (f"{N_clean}", f"{D_clean}")
-		# return f"\\dfrac{{{N_clean}}}{{{D_clean}}}"
 		if factor:
 			B = self.factor()
 		else:
 			B = self
-		latex_str = brat_to_str(B, True)
+		latex_str = remove_unnecessary_braces_and_spaces(brat_to_str(B, True))
 		if split:
 			N, D = latex_str.split('@')
 			N = N[8:-1]

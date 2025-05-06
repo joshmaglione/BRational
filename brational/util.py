@@ -6,6 +6,8 @@
 
 from enum import Enum
 from datetime import datetime
+from functools import reduce
+import re
 
 DEBUG = True
 
@@ -21,7 +23,29 @@ def at_least_two(A:bool, B:bool, C:bool) -> bool:
 # Given an expression for a numerator, determine if we need to wrap with
 # parentheses.
 def parenthesis_wrap(expr:str) -> str:
-    ... 
+    for l, m, r in zip(expr, expr[1:], expr[2:]):
+        if l == '(':
+            return expr
+        if l + m + r in [" + ", " - "]:
+            return f"({expr})"
+    return expr
+
+# The length of the function name is unnecessarily long.
+def remove_unnecessary_braces_and_spaces(latex_text):
+	patt_braces = re.compile(r'[\^\_]\{.\}')
+	patt_spaces = re.compile(r'[0-9] [a-zA-Z0-9]')
+	patt_spaces2 = re.compile(r'\} [a-zA-Z0-9]')
+	def remove_braces(match):
+		return f"{match.group(0)[0]}{match.group(0)[2]}"
+	def remove_spaces(match):
+		return match.group(0)[0] + match.group(0)[2]
+	pairs = [
+		(patt_braces, remove_braces), 
+		(patt_spaces, remove_spaces), 
+		(patt_spaces2, remove_spaces)
+	]
+	return reduce(lambda x, y: y[0].sub(y[1], x), pairs, latex_text)
+
 
 class brat_type(Enum):      
     #                           p.d. = positive degree 
