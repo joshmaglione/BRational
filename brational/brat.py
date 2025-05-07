@@ -469,6 +469,13 @@ def format_factored_numerator(
 			else:
 				f_str = f"({f_str})*"
 		n_str += f_str
+	
+	# If we still have an empty string, it will just be the monomial unit*neg
+	# that we need.
+	if len(n_str) == 0:
+		return f"{stringify(P, unit, P(1), P(neg), latex)}"
+	
+	# Now we can assume the string is not empty.
 	if n_str[-1] == "*":
 		n_str = n_str[:-1]
 	if unit*neg != 1:
@@ -476,9 +483,8 @@ def format_factored_numerator(
 			n_str = "-" + n_str
 		else:
 			if latex:
-				n_str = f"{stringify(P, unit, P(1), P(neg), latex)}{n_str}"
-			else:
-				n_str = f"{stringify(P, unit, P(1), P(neg), latex)}*{n_str}"
+				return f"{stringify(P, unit, P(1), P(neg), latex)}{n_str}"
+			return f"{stringify(P, unit, P(1), P(neg), latex)}*{n_str}"
 	return n_str
 
 # Given data, return the formatted denominator as a string.
@@ -513,7 +519,7 @@ def format_denominator(R, sig:dict, latex:bool) -> str:
 	
 	if latex:
 		return d_str
-	if len(gp_list) > 2 or at_least_two(
+	if len(gp_list) > 1 or at_least_two(
 		sig["coefficient"] != 1, 
 		mono_factor != 1,
 		len(gp_list) > 0

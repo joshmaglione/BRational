@@ -155,12 +155,54 @@ def test_previous_bugs():
 	assert str(R2) == "(1 - t^8)/((1 - t)^4*(1 - t^3)*(1 - t^5)*(1 - t^6))"
 	assert R2.latex() == "\\dfrac{1 - t^8}{(1 - t)^4(1 - t^3)(1 - t^5)(1 - t^6)}"
 
+
+def test_Zeta_examples():
+	# Pulled from Rossmann's Zeta package.
+	# https://torossmann.github.io/Zeta/
+	q, t, sc_0 = polygens(QQ, ('q', 't', 'sc_0'))
+	R1 = -(q^2*t^2 + q*t + 1)/((q^3*t^2 - 1)*(q*t + 1)*(q*t - 1)*(t - 1))
+	R2 = -1/((q^2*t^3 - 1)*(q*t - 1)*(t - 1))
+	R3 = (t - 1)/(q*t - 1)
+	R4 = -(q*sc_0*t - q*t^2 - sc_0*t + 1)*(t - 1)/((q^3*t^2 - 1)*(q*t - 1))
+	R5 = (q^4 + q^2*t^2 - q^3 - 2*q^2*t - q*t^2 + q^2 + t^2)*(q - 1)/((q^2 + q*t + t^2)*(q - t)^3)
+	R6 = -(q^3 - t)/((q - t)*q^2*(t - 1))
+	R7 = -(t - 1)/((q^2*t - 1)*(q*t - 1))
+	R8 = (q - t)^3/(q^3*(t - 1)^4)
+	R9 = -(q^4 - t)*(q^3 - t)^2/((q^2 - t)^3*q^4*(t - 1))
+	R10 = -(q^3*t + q^3 - 2*q^2*t - 2*q*t + t^2 + t)/((q*t - 1)^2*q^3*(t - 1))
+	R11 = (q^6*t^6 + q^5*t^7 - q^6*t^5 - 3*q^5*t^6 - 6*q^4*t^7 + q^7*t^3 - 5*q^6*t^4 + 3*q^5*t^5 + 3*q^4*t^6 + 14*q^3*t^7 - 3*q^7*t^2 + 7*q^6*t^3 + 5*q^5*t^4 + 17*q^4*t^5 - 12*q^3*t^6 - 14*q^2*t^7 - q^7*t + 24*q^6*t^2 - 58*q^5*t^3 + 45*q^4*t^4 - 83*q^3*t^5 + 46*q^2*t^6 - 2*q*t^7 + t^8 - q^7 + 2*q^6*t - 46*q^5*t^2 + 83*q^4*t^3 - 45*q^3*t^4 + 58*q^2*t^5 - 24*q*t^6 + t^7 + 14*q^5*t + 12*q^4*t^2 - 17*q^3*t^3 - 5*q^2*t^4 - 7*q*t^5 + 3*t^6 - 14*q^4*t - 3*q^3*t^2 - 3*q^2*t^3 + 5*q*t^4 - t^5 + 6*q^3*t + 3*q^2*t^2 + q*t^3 - q^2*t - q*t^2)/((q*t - 1)*(q - t)^3*q^4*(t + 1)*(t - 1)^4)
+	R12 = (q^3 + 2*q^2 - 3*q + 1)*(2*q - 1)*q^2
+	R13 = -(q*t^3 - 1)/((q*t^2 - 1)*(q*t - 1)*(t + 1)*(t - 1)^2)
+	assert str(brat(R1)) == "(1 + q*t + q^2*t^2)/((1 - t)*(1 - q^2*t^2)*(1 - q^3*t^2))"
+	assert str(brat(R2)) == "1/((1 - t)*(1 - q*t)*(1 - q^2*t^3))"
+	assert str(brat(R3)) == "(1 - t)/(1 - q*t)"
+	assert str(brat(R4)) == "(1 - t - t*sc_0 + t^2*sc_0 + q*t*sc_0 - q*t^2 - q*t^2*sc_0 + q*t^3)/((1 - q*t)*(1 - q^3*t^2))"
+	assert str(brat(R5, increasing_order=False)) == "(1 + q^-2*t^2 - 2*q^-1 - 2*q^-2*t - 2*q^-3*t^2 + 2*q^-2 + 2*q^-3*t + 2*q^-4*t^2 - q^-3 - q^-5*t^2)/((1 - q^-1*t)^2*(1 - q^-3*t^3))"
+	assert str(brat(R6, increasing_order=False)) == "(1 - q^-3*t)/((1 - q^-1*t)*(1 - t))"
+	assert str(brat(R7)) == "(1 - t)/((1 - q*t)*(1 - q^2*t))"
+	assert str(brat(R8, increasing_order=False)) == "(1 - 3*q^-1*t + 3*q^-2*t^2 - q^-3*t^3)/(1 - t)^4"
+	assert str(brat(R9, increasing_order=False)) == "(1 - 2*q^-3*t - q^-4*t + q^-6*t^2 + 2*q^-7*t^2 - q^-10*t^3)/((1 - q^-2*t)^3*(1 - t))"
+	assert str(brat(R10, increasing_order=False)) == "(t + 1 - 2*q^-1*t - 2*q^-2*t + q^-3*t^2 + q^-3*t)/((1 - t)*(1 - q*t)^2)"
+	assert str(brat(R11)) == "(q^-6*t^2 + q^-5*t - q^-6*t^3 - 3*q^-5*t^2 - 6*q^-4*t + q^-7*t^5 - 5*q^-6*t^4 + 3*q^-5*t^3 + 3*q^-4*t^2 + 14*q^-3*t - 3*q^-7*t^6 + 7*q^-6*t^5 + 5*q^-5*t^4 + 17*q^-4*t^3 - 12*q^-3*t^2 - 14*q^-2*t - q^-7*t^7 + 24*q^-6*t^6 - 58*q^-5*t^5 + 45*q^-4*t^4 - 83*q^-3*t^3 + 46*q^-2*t^2 - 2*q^-1*t + 1 - q^-7*t^8 + 2*q^-6*t^7 - 46*q^-5*t^6 + 83*q^-4*t^5 - 45*q^-3*t^4 + 58*q^-2*t^3 - 24*q^-1*t^2 + t + 14*q^-5*t^7 + 12*q^-4*t^6 - 17*q^-3*t^5 - 5*q^-2*t^4 - 7*q^-1*t^3 + 3*t^2 - 14*q^-4*t^7 - 3*q^-3*t^6 - 3*q^-2*t^5 + 5*q^-1*t^4 - t^3 + 6*q^-3*t^7 + 3*q^-2*t^6 + q^-1*t^5 - q^-2*t^7 - q^-1*t^6)/((1 - q^-1*t)^3*(1 - t)^3*(1 - t^2)*(1 - q*t))"
+	assert str(brat(R12)) == "-(q^2 - 5*q^3 + 8*q^4 - 3*q^5 - 2*q^6)"
+	assert str(brat(R13)) == "(1 - q*t^3)/((1 - t)*(1 - t^2)*(1 - q*t)*(1 - q*t^2))"
+	assert brat(R1).latex() == "\\dfrac{1 + qt + q^2t^2}{(1 - t)(1 - q^2t^2)(1 - q^3t^2)}"
+	assert brat(R2).latex() == "\\dfrac{1}{(1 - t)(1 - qt)(1 - q^2t^3)}"
+	assert brat(R3).latex() == "\\dfrac{1 - t}{(1 - qt)}"
+	assert brat(R4).latex() == "\\dfrac{1 - t - t\\mathit{sc}_0 + t^2\\mathit{sc}_0 + qt\\mathit{sc}_0 - qt^2 - qt^2\\mathit{sc}_0 + qt^3}{(1 - qt)(1 - q^3t^2)}"
+	assert brat(R5, increasing_order=False).latex() == "\\dfrac{1 + q^{-2}t^2 - 2q^{-1} - 2q^{-2}t - 2q^{-3}t^2 + 2q^{-2} + 2q^{-3}t + 2q^{-4}t^2 - q^{-3} - q^{-5}t^2}{(1 - q^{-1}t)^2(1 - q^{-3}t^3)}"
+	assert brat(R6, increasing_order=False).latex() == "\\dfrac{1 - q^{-3}t}{(1 - q^{-1}t)(1 - t)}"
+	assert brat(R7).latex() == "\\dfrac{1 - t}{(1 - qt)(1 - q^2t)}"
+
+
+
 def main():
 	test_integers()
 	test_rationals()
 	test_polynomials()
 	test_laurent_polynomials()
 	test_previous_bugs()
+	test_Zeta_examples()
 	print("All tests passed!")
 
 if __name__ == "__main__":
