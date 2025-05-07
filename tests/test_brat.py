@@ -74,6 +74,7 @@ def test_polynomials():
 	assert str(brat((1 + 2*x + x*x)/6)) == "(1 + 2*x + x^2)/6"
 	assert str(brat((1 + 2*x + x*x)/6).factor()) == "(1 + x)^2/6"
 	assert str(brat(3 + x - x**4/2, increasing_order=False)) == "-(x^4 - 2*x - 6)/2"
+	assert str(brat(numerator=x + x**9 - x**12, denominator=x)) == "1 + x^8 - x^11"
 	assert brat(x + 1).latex() == "1 + x"
 	assert brat(x**2 - 1 - x).latex() == "-(1 + x - x^2)"
 	assert brat(1 + 2*x + x*x).latex() == "1 + 2x + x^2"
@@ -84,6 +85,7 @@ def test_polynomials():
 	assert brat((1 + 2*x + x*x)/6).latex() == "\\dfrac{1 + 2x + x^2}{6}"
 	assert brat((1 + 2*x + x*x)/6).factor().latex() == "\\dfrac{(1 + x)^2}{6}"
 	assert brat(3 + x - x**4/2, increasing_order=False).latex() == "\\dfrac{-(x^4 - 2x - 6)}{2}"
+	assert str(brat(numerator=x + x**9 - x**12, denominator=x).latex()) == "1 + x^8 - x^{11}"
 	q, t = polygens(QQ, ('q', 't'))
 	assert str(brat(q**2 + 2*q*t + t**2)) == "t^2 + 2*q*t + q^2"
 	assert str(brat(q**2 + 2*q*t + t**2, increasing_order=False)) == "q^2 + 2*q*t + t^2"
@@ -108,7 +110,40 @@ def test_laurent_polynomials():
 	assert str(brat(x + 1/x)) == "x^-1 + x"
 	assert str(brat((1 + 2*x + x**2)/x**6)) == "x^-6 + 2*x^-5 + x^-4"
 	assert str(brat((1 + 2*x + x**2)/x**6).factor()) == "x^-6*(1 + x)^2"
-
+	assert str(brat(x + 1/x, increasing_order=False)) == "x + x^-1"
+	assert str(brat((1 + 2*x + x**2)/x**6, increasing_order=False)) == "x^-4 + 2*x^-5 + x^-6"
+	assert str(brat((1 + 2*x + x**2)/x**6, increasing_order=False).factor()) == "x^-6*(x + 1)^2"
+	assert str(brat(numerator=1, denominator=x**32)) == "x^-32"
+	assert str(brat(numerator=1, denominator=x**32).factor()) == "x^-32"
+	assert str(brat(numerator=(1 + x)*(1 + x**3 - x**5), denominator_signature={
+		"coefficient": 2,
+		"monomial": (32,),
+		"factors": {},
+	})) == "(x^-32 + x^-31 + x^-29 + x^-28 - x^-27 - x^-26)/2"
+	assert str(brat(numerator=(1 + x)*(1 + x**3 - x**5), denominator_signature={
+		"coefficient": 2,
+		"monomial": (32,),
+		"factors": {},
+	}).factor()) == "x^-32*(1 + x)*(1 + x^3 - x^5)/2"
+	assert str(brat(x + 1/x, negative_exponents=False)) == "(1 + x^2)/x"
+	assert str(brat((1 + 2*x + x**2)/x**6, negative_exponents=False)) == "(1 + 2*x + x^2)/x^6"
+	assert str(brat((1 + 2*x + x**2)/x**6, negative_exponents=False).factor()) == "(1 + x)^2/x^6"
+	assert str(brat(x + 1/x, increasing_order=False, negative_exponents=False)) == "(x^2 + 1)/x"
+	assert str(brat((1 + 2*x + x**2)/x**6, increasing_order=False, negative_exponents=False)) == "(x^2 + 2*x + 1)/x^6"
+	assert str(brat((1 + 2*x + x**2)/x**6, increasing_order=False, negative_exponents=False).factor()) == "(x + 1)^2/x^6"
+	assert str(brat(numerator=1, denominator=x**32, negative_exponents=False)) == "1/x^32"
+	assert str(brat(numerator=1, denominator=x**32, negative_exponents=False).factor()) == "1/x^32"
+	assert str(brat(numerator=(1 + x)*(1 + x**3 - x**5), denominator_signature={
+		"coefficient": 2,
+		"monomial": (32,),
+		"factors": {},
+	}, negative_exponents=False)) == "(1 + x + x^3 + x^4 - x^5 - x^6)/(2*x^32)"
+	assert str(brat(numerator=(1 + x)*(1 + x**3 - x**5), denominator_signature={
+		"coefficient": 2,
+		"monomial": (32,),
+		"factors": {},
+	}, negative_exponents=False).factor()) == "(1 + x)*(1 + x^3 - x^5)/(2*x^32)"
+	
 
 
 def test_previous_bugs():
