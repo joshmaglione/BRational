@@ -857,11 +857,15 @@ class brat:
 			raise ValueError("Must provide an expression or signature.")
 		if not isinstance(signature, dict):
 			raise TypeError("Signature must be a dictionary.")
-		if not "factors" in signature:
-			signature = {"factors": signature}
+		if "coefficient" not in signature.keys():
+			raise ValueError("Signature must contain key 'coefficient'.")
+		if "monomial" not in signature.keys():
+			raise ValueError("Signature must contain key 'monomial'.")
+		if "factors" not in signature.keys():
+			raise ValueError("Signature must contain key 'factors'.")
 		expr = unfold_signature(self._ring, signature)
 		new_numer = self._ring(self._n_poly*expr/self.denominator())
-		if not new_numer.denominator() in ZZ:
+		if new_numer.denominator() not in ZZ:
 			raise ValueError("New denominator must be a multiple of the old one.")
 		return brat(
 			numerator=new_numer, 
