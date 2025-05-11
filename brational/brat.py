@@ -20,7 +20,7 @@ def is_denominator_zero(den, sig) -> bool:
 			return True
 	if "factors" in sig.keys():
 		return any(map(
-			lambda v: list(v) == [0]*len(v), sig["factors"].values()
+			lambda v: list(v) == [0]*len(v), list(sig["factors"].keys())
 		))
 	return False
 
@@ -316,8 +316,14 @@ def process_input(num, dem=None, sig=None, fix=True):
 		N = get_poly(R.numerator(), P)
 		D = get_poly(R.denominator(), P)
 
+	# Numerators can contain rationals still
+	u = N.denominator()
+	N *= u
+	D *= u
+
 	# Now get the signature	
 	if fix and sig is not None:
+		sig["coefficient"] *= u
 		D_sig = sig
 		N_new = N
 	else:
@@ -463,11 +469,17 @@ def format_factored_numerator(
 				f_str = f"{f_str}^{{{e}}}"
 			else:
 				f_str = f"{f_str}^{e}*"
-		elif (len(factors) > 1 or unit != 1) and len(f.monomials()) != 1:
-			if latex:
-				f_str = f"({f_str})"
+		elif (len(factors) > 1 or unit != 1):
+			if len(f.monomials()) != 1:
+				if latex:
+					f_str = f"({f_str})"
+				else:
+					f_str = f"({f_str})*"
 			else:
-				f_str = f"({f_str})*"
+				if latex:
+					f_str = f"{f_str}"
+				else:
+					f_str = f"{f_str}*"
 		n_str += f_str
 	
 	# If we still have an empty string, it will just be the monomial unit*neg
@@ -519,7 +531,7 @@ def format_denominator(R, sig:dict, latex:bool) -> str:
 	
 	if latex:
 		return d_str
-	if len(gp_list) > 1 or at_least_two(
+	if len(gp_list) > 1 or len(mono_factor.factor()) > 1 or at_least_two(
 		sig["coefficient"] != 1, 
 		mono_factor != 1,
 		len(gp_list) > 0
@@ -587,7 +599,7 @@ def brat_to_str(B, latex=False) -> str:
 		return quo(N, B._d_sig["coefficient"])
 	
 	# Laurent polynomial
-	if B._type.name in ["INTEGRAL_L_POLY", "RATIONAL_L_POLY"] and B.negative_exponents:
+	if B._type.name in ["INTEGRAL_L_POLY", "RATIONAL_L_POLY"] and B.hide_monomial:
 		vars_vec = zip(B._ring.gens(), B._d_sig["monomial"])
 		monomial = prod(x**e for x, e in vars_vec)
 		N = numerator(
@@ -601,7 +613,7 @@ def brat_to_str(B, latex=False) -> str:
 		return quo(N, B._d_sig["coefficient"])
 
 	# Rational function
-	if B.negative_exponents:
+	if B.hide_monomial:
 		vars_vec = zip(B._ring.gens(), B._d_sig["monomial"])
 		monomial = prod(x**e for x, e in vars_vec)
 		N = numerator(
@@ -640,7 +652,7 @@ class brat:
 
 	- ``increasing_order``: whether to display polynomials in increasing degree (default: ``True``),
 
-	- ``negative_exponents``: whether to absorb the monomial in the denominator into the numerator (default: ``True``).
+	- ``hide_monomial``: whether to absorb the monomial in the denominator into the numerator (default: ``True``).
 	"""
 
 	def __init__(self, 
@@ -650,7 +662,7 @@ class brat:
 			denominator_signature:dict=None,
 			fix_denominator:bool=True,
 			increasing_order:bool=True,
-			negative_exponents:bool=True,
+			hide_monomial:bool=True,
 		):
 		# First we remove zero denominator
 		if is_denominator_zero(denominator, denominator_signature):
@@ -707,7 +719,7 @@ class brat:
 		self._d_sig = T[2]			# Denominator with form \prod_i (1 - M_i)
 		self._type = T[3]			# Enum for printing
 		self.increasing_order = increasing_order
-		self.negative_exponents = negative_exponents
+		self.hide_monomial = hide_monomial
 		self._factor = False
 
 	def __str__(self) -> str:

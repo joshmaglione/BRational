@@ -21,7 +21,7 @@ The (ordered) keyword arguments for `brat` are
 - `numerator`: the numerator polynomial of the rational function (default: `None`),
 - `denominator`: the denominator polynomial of the rational function (default: `None`),
 - `denominator_signature`: the dictionary of data for the denominator (default: `None`),
-- `fix_denominator`: whether to keep the given denominator fixed (default: `True`),
+- `fix_denominator`: whether to keep the given denominator fixed---does not apply to coefficients (default: `True`),
 - `increasing_order`: whether to display polynomials in increasing degree (default: `True`),
 - `negative_exponents`: whether to absorb the monomial in the denominator into the numerator (default: `True`).
 
