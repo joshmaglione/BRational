@@ -332,7 +332,7 @@ def test_univariate_rational_functions():
 			(1,) : 2,
 			(3,) : 1
 		}
-	}, hide_monomial=False, increasing_order=False).factor()) == "6*x*(x^7 - 2/3*x^4 + 1/2*x + 1/6)/(504*x^3*(1 - x)^2*(1 - x^3))"
+	}, hide_monomial=False, increasing_order=False).factor()) == "x*(6*x^7 - 4*x^4 + 3*x + 1)/(504*x^3*(1 - x)^2*(1 - x^3))"
 
 
 

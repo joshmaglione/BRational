@@ -111,6 +111,18 @@ def unfold_signature(R, sig, exp_func=lambda _: True):
 	)
 	return monomial*factors
 
+# Given a list of polynomial factors, return the integer factor together with a
+# list of positive degree terms
+def split_integer_factor(factors):
+	int_coeff = factors.unit()
+	pos_facts = []
+	for f, e in list(factors):
+		if f in ZZ:
+			int_coeff *= f**e
+		else:
+			pos_facts.append((f, e))
+	return (int_coeff, pos_facts)
+
 # Given the polynomial ring R, the numerator N, and the denominator D, construct
 # the denominator signature.
 def get_signature(R, N, D):
@@ -125,18 +137,17 @@ def get_signature(R, N, D):
 	if len(varbs) == 1: 
 		deg = lambda m: vector(ZZ, [m.degree()])
 	else:
-		deg = lambda m: vector(ZZ, [m.degree(v) for v in varbs])
+		deg = lambda m: vector(ZZ, m.degrees())
 	mon = lambda v: prod(x**e for x, e in zip(varbs, v))
-	D_factors = list(D.factor())		# all factors in denominator no unit
-	gp_factors = {}						# all geometric progressions
-	pos_facts = R(1)					# all factors to go to numerator
-	const = D.factor().unit()			# the monomial
+	const, D_factors = split_integer_factor(D.factor())
+	gp_factors = {}							# all geometric progressions
+	pos_facts = R(1)						# all factors to go to numerator
 	my_print(DEBUG, f"Numerator:\n\t{N}")
 	my_print(DEBUG, f"Denominator:\n\t{D_factors}")
 	my_print(DEBUG, f"Monomial:\n\t{const}")
 	while len(D_factors) > 0:
 		f, e = D_factors.pop(0)
-		m_f = f.monomials()
+		m_f = f.monomials() 	## Need to ignore constants??
 		if len(m_f) == 2 and prod(f.coefficients()) < 0:
 			my_print(DEBUG, f"Polynomial: {f} -- is GP", 1)
 			# We make sure that if there are negative values, the first non-zero
@@ -222,8 +233,9 @@ def get_signature(R, N, D):
 		my_print(DEBUG, f"Numerator:\n\t{N_form}")
 		my_print(DEBUG, f"Denominator:\n\t{D_form}")
 		raise RuntimeError("Unexpected behavior. Contact Josh.")
-	const_unit = const.factor().unit()
-	const_mono = const/const_unit
+	my_print(DEBUG, f"const: {const}", 1)
+	const_unit, const_mono_factors = split_integer_factor(const.factor())
+	const_mono = R(prod(f**e for f, e in const_mono_factors))
 	if const_unit < 0:
 		N_form = -N_form
 		const_unit = -const_unit
@@ -316,10 +328,11 @@ def process_input(num, dem=None, sig=None, fix=True):
 		N = get_poly(R.numerator(), P)
 		D = get_poly(R.denominator(), P)
 
-	# Numerators can contain rationals still
+	# # Numerators can contain rationals still
 	u = N.denominator()
-	N *= u
-	D *= u
+	R = PolynomialRing(ZZ, varbs)
+	N = R(N*u)
+	D = R(D*u)
 
 	# Now get the signature	
 	if fix and sig is not None:
@@ -327,28 +340,28 @@ def process_input(num, dem=None, sig=None, fix=True):
 		D_sig = sig
 		N_new = N
 	else:
-		N_new, D_sig = get_signature(P, P(N), P(D))
+		N_new, D_sig = get_signature(R, N, D)
 	
 	# Determine the brat type
 	br_type = brat_type("rf")
 	if D == 1:
-		if N in P.base_ring():
+		if N in R.base_ring():
 			br_type = brat_type("i")
 		else:
 			br_type = brat_type("ip")
-	if D != 1 and D in P.base_ring():
-		if N in P.base_ring():
+	if D != 1 and D in R.base_ring():
+		if N in R.base_ring():
 			br_type = brat_type("r")
 		else:
 			br_type = brat_type("rp")
-	if D not in P.base_ring() and D_sig["factors"] == {}:
+	if D not in R.base_ring() and D_sig["factors"] == {}:
 		if D_sig["coefficient"] == 1:
 			br_type = brat_type("ilp")
 		else:
 			br_type = brat_type("rlp")
 	
 	# Celebrate!
-	return (P, N_new, D_sig, br_type)
+	return (R, N_new, D_sig, br_type)
 
 # Given variables, a vector of integers, and a latex flag, return the associated
 # monomial.
