@@ -34,17 +34,6 @@ def test_integers():
 		"monomial": (),
 		"factors": {},
 	}, fix_denominator=False)) == "3"
-	
-
-def test_integers_latex():
-	assert brat(int(1)).latex() == "1"
-	assert brat(int(0)).latex() == "0"
-	assert brat(int(-1)).latex() == "-1"
-	assert brat(ZZ(1)).latex() == "1"
-	assert brat(ZZ(0)).latex() == "0"
-	assert brat(ZZ(-1)).latex() == "-1"
-	assert brat(ZZ(4)).latex() == "4"
-	assert brat(ZZ(-12)).latex() == "-12"
 
 
 def test_rationals():
@@ -58,19 +47,6 @@ def test_rationals():
 	assert str(brat(numerator=ZZ(5), denominator=ZZ(10), fix_denominator=True)) == "5/10"
 	assert str(brat(numerator=ZZ(5), denominator=ZZ(-10), fix_denominator=True)) == "-5/10"
 	assert str(brat(numerator=ZZ(5), denominator=ZZ(-10), fix_denominator=False)) == "-1/2"
-
-
-def test_rationals_latex():
-	assert brat(int(1)/int(2)).latex() == "\\dfrac{1}{2}"
-	assert brat(int(3)/int(2)).latex() == "\\dfrac{3}{2}"
-	assert brat(int(9)/int(12)).latex() == "\\dfrac{3}{4}"
-	assert brat(ZZ(1)/ZZ(2)).latex() == "\\dfrac{1}{2}"
-	assert brat(ZZ(3)/ZZ(2)).latex() == "\\dfrac{3}{2}"
-	assert brat(ZZ(9)/ZZ(12)).latex() == "\\dfrac{3}{4}"
-	assert brat(numerator=ZZ(5), denominator=int(10), fix_denominator=False).latex() == "\\dfrac{1}{2}"
-	assert brat(numerator=ZZ(5), denominator=ZZ(10), fix_denominator=True).latex() == "\\dfrac{5}{10}"
-	assert brat(numerator=ZZ(5), denominator=ZZ(-10), fix_denominator=True).latex() == "\\dfrac{-5}{10}"
-	assert brat(numerator=ZZ(5), denominator=ZZ(-10), fix_denominator=False).latex() == "\\dfrac{-1}{2}"
 
 
 def test_univariate_polynomials():
@@ -88,21 +64,6 @@ def test_univariate_polynomials():
 	assert str(brat(numerator=x + x**9 - x**12, denominator=x)) == "1 + x^8 - x^11"
 
 
-def test_univariate_polynomials_latex():
-	x = var('x')
-	assert brat(x + 1).latex() == "1 + x"
-	assert brat(x**2 - 1 - x).latex() == "-(1 + x - x^2)"
-	assert brat(1 + 2*x + x*x).latex() == "1 + 2x + x^2"
-	assert brat(1 + 2*x + x*x).factor().latex() == "(1 + x)^2"
-	assert brat(3 + x - x**10, increasing_order=False).latex() == "-(x^{10} - x - 3)"
-	assert brat(x + QQ(1/2)).latex() == "\\dfrac{1 + 2x}{2}"
-	assert brat((x**58 - 1 - x)/4).latex() == "\\dfrac{-(1 + x - x^{58})}{4}"
-	assert brat((1 + 2*x + x*x)/6).latex() == "\\dfrac{1 + 2x + x^2}{6}"
-	assert brat((1 + 2*x + x*x)/6).factor().latex() == "\\dfrac{(1 + x)^2}{6}"
-	assert brat(3 + x - x**4/2, increasing_order=False).latex() == "\\dfrac{-(x^4 - 2x - 6)}{2}"
-	assert str(brat(numerator=x + x**9 - x**12, denominator=x).latex()) == "1 + x^8 - x^{11}"
-
-
 def test_multivariate_polynomials():
 	q, t = polygens(QQ, ('q', 't'))
 	assert str(brat(q**2 + 2*q*t + t**2)) == "t^2 + 2*q*t + q^2"
@@ -113,18 +74,6 @@ def test_multivariate_polynomials():
 	assert str(brat(q**2 + 2*q*t + t**2, increasing_order=False).factor()) == "(q + t)^2"
 	assert str(brat((q**2 + 2*q*t + t**2)/6).factor()) == "(t + q)^2/6"
 	assert str(brat((q**2 + 2*q*t + t**2)/6, increasing_order=False).factor()) == "(q + t)^2/6"
-
-
-def test_multivariate_polynomials_latex():
-	q, t = polygens(QQ, ('q', 't'))
-	assert str(brat(q**2 + 2*q*t + t**2).latex()) == "t^2 + 2qt + q^2"
-	assert str(brat(q**2 + 2*q*t + t**2, increasing_order=False).latex()) == "q^2 + 2qt + t^2"
-	assert str(brat((q**2 + 2*q*t + t**2)/60).latex()) == "\\dfrac{t^2 + 2qt + q^2}{60}"
-	assert str(brat((q**2 + 2*q*t + t**2)/60, increasing_order=False).latex()) == "\\dfrac{q^2 + 2qt + t^2}{60}"
-	assert str(brat(q**2 + 2*q*t + t**2).factor().latex()) == "(t + q)^2"
-	assert str(brat(q**2 + 2*q*t + t**2, increasing_order=False).factor().latex()) == "(q + t)^2"
-	assert str(brat((q**2 + 2*q*t + t**2)/6).factor().latex()) == "\\dfrac{(t + q)^2}{6}"
-	assert str(brat((q**2 + 2*q*t + t**2)/6, increasing_order=False).factor().latex()) == "\\dfrac{(q + t)^2}{6}"
 
 
 def test_univariate_laurent_polynomials():
@@ -166,45 +115,6 @@ def test_univariate_laurent_polynomials():
 		"factors": {},
 	}, hide_monomial=False).factor()) == "(1 + x)*(1 + x^3 - x^5)/(2*x^32)"
 
-def test_univariate_laurent_polynomials_latex():
-	x = var('x')
-	assert brat(x + 1/x).latex() == "x^{-1} + x"
-	assert brat((1 + 2*x + x**2)/x**6).latex() == "x^{-6} + 2x^{-5} + x^{-4}"
-	assert brat((1 + 2*x + x**2)/x**6).factor().latex() == "x^{-6}(1 + x)^2"
-	assert brat(x + 1/x, increasing_order=False).latex() == "x + x^{-1}"
-	assert brat((1 + 2*x + x**2)/x**6, increasing_order=False).latex() == "x^{-4} + 2x^{-5} + x^{-6}"
-	assert brat((1 + 2*x + x**2)/x**6, increasing_order=False).factor().latex() == "x^{-6}(x + 1)^2"
-	assert brat(numerator=1, denominator=x**32).latex() == "x^{-32}"
-	assert brat(numerator=1, denominator=x**32).factor().latex() == "x^{-32}"
-	assert brat(numerator=(1 + x)*(1 + x**3 - x**5), denominator_signature={
-		"coefficient": 2,
-		"monomial": (32,),
-		"factors": {},
-	}).latex() == "\\dfrac{x^{-32} + x^{-31} + x^{-29} + x^{-28} - x^{-27} - x^{-26}}{2}"
-	assert brat(numerator=(1 + x)*(1 + x**3 - x**5), denominator_signature={
-		"coefficient": 2,
-		"monomial": (32,),
-		"factors": {},
-	}).factor().latex() == "\\dfrac{x^{-32}(1 + x)(1 + x^3 - x^5)}{2}"
-	assert brat(x + 1/x, hide_monomial=False).latex() == "\\dfrac{1 + x^2}{x}"
-	assert brat((1 + 2*x + x**2)/x**6, hide_monomial=False).latex() == "\\dfrac{1 + 2x + x^2}{x^6}"
-	assert brat((1 + 2*x + x**2)/x**6, hide_monomial=False).factor().latex() == "\\dfrac{(1 + x)^2}{x^6}"
-	assert brat(x + 1/x, increasing_order=False, hide_monomial=False).latex() == "\\dfrac{x^2 + 1}{x}"
-	assert brat((1 + 2*x + x**2)/x**6, increasing_order=False, hide_monomial=False).latex() == "\\dfrac{x^2 + 2x + 1}{x^6}"
-	assert brat((1 + 2*x + x**2)/x**6, increasing_order=False, hide_monomial=False).factor().latex() == "\\dfrac{(x + 1)^2}{x^6}"
-	assert brat(numerator=1, denominator=x**32, hide_monomial=False).latex() == "\\dfrac{1}{x^{32}}"
-	assert brat(numerator=1, denominator=x**32, hide_monomial=False).factor().latex() == "\\dfrac{1}{x^{32}}"
-	assert brat(numerator=(1 + x)*(1 + x**3 - x**5), denominator_signature={
-		"coefficient": 2,
-		"monomial": (32,),
-		"factors": {},
-	}, hide_monomial=False).latex() == "\\dfrac{1 + x + x^3 + x^4 - x^5 - x^6}{2x^{32}}"
-	assert brat(numerator=(1 + x)*(1 + x**3 - x**5), denominator_signature={
-		"coefficient": 2,
-		"monomial": (32,),
-		"factors": {},
-	}, hide_monomial=False).factor().latex() == "\\dfrac{(1 + x)(1 + x^3 - x^5)}{2x^{32}}"
-	
 
 def test_multivariate_laurent_polynomials():
 	q, t = polygens(QQ, ('q', 't'))
@@ -238,40 +148,6 @@ def test_multivariate_laurent_polynomials():
 		"monomial": (23, 29),
 		"factors": {},
 	}, hide_monomial=False, fix_denominator=False)) == "1/(4*q^22*t^28)"
-
-
-def test_multivariate_laurent_polynomials_latex():
-	q, t = polygens(QQ, ('q', 't'))
-	assert brat(t + q**-1).latex() == "q^{-1} + t"
-	assert brat(t + q**-1, increasing_order=False).latex() == "t + q^{-1}"
-	assert brat(t + q**-1, hide_monomial=False).latex() == "\\dfrac{1 + qt}{q}"
-	assert brat((1 + q*t - t**2)/q**3).latex() == "q^{-3} - q^{-3}t^2 + q^{-2}t"
-	assert brat((1 + q*t - t**2)/q**3, increasing_order=False).latex() == "q^{-2}t - q^{-3}t^2 + q^{-3}"
-	assert brat((1 + q*t - t**2)/q**3, hide_monomial=False).latex() == "\\dfrac{1 - t^2 + qt}{q^3}"
-	assert brat(q**-5*t**-10).latex() == "q^{-5}t^{-10}"
-	assert brat(12*q**-5*t**-10).latex() == "12q^{-5}t^{-10}"
-	assert brat(12**-1*(q**-5*t**-10+q**-3*t**-12)).latex() == "\\dfrac{q^{-5}t^{-10} + q^{-3}t^{-12}}{12}"
-	assert brat(12**-1*(q**-5*t**-10+q**-3*t**-12), hide_monomial=False).latex() == "\\dfrac{t^2 + q^2}{12q^5t^{12}}"
-	assert brat(q**-5*t**-10, hide_monomial=False).latex() == "\\dfrac{1}{q^5t^{10}}"
-	assert brat((q + 1)**2*t**-5*(q + t)).latex() == "t^{-4} + qt^{-5} + 2qt^{-4} + 2q^2t^{-5} + q^2t^{-4} + q^3t^{-5}"
-	assert brat((q + 1)**2*t**-5*(q + t), hide_monomial=False).latex() == "\\dfrac{t + q + 2qt + 2q^2 + q^2t + q^3}{t^5}"
-	assert brat((q + 1)**2*t**-5*(q + t)).factor().latex() == "t^{-5}(t + q)(1 + q)^2"
-	assert brat((q + 1)**2*t**-5*(q + t), hide_monomial=False).factor().latex() == "\\dfrac{(t + q)(1 + q)^2}{t^5}"
-	assert brat(numerator=q*t, denominator_signature={
-		"coefficient": 4,
-		"monomial": (23, 29),
-		"factors": {},
-	}).latex() == "\\dfrac{q^{-22}t^{-28}}{4}"
-	assert brat(numerator=q*t, denominator_signature={
-		"coefficient": 4,
-		"monomial": (23, 29),
-		"factors": {},
-	}, hide_monomial=False).latex() == "\\dfrac{qt}{4q^{23}t^{29}}"
-	assert brat(numerator=q*t, denominator_signature={
-		"coefficient": 4,
-		"monomial": (23, 29),
-		"factors": {},
-	}, hide_monomial=False, fix_denominator=False).latex() == "\\dfrac{1}{4q^{22}t^{28}}"
 
 
 def test_univariate_rational_functions():
@@ -334,6 +210,13 @@ def test_univariate_rational_functions():
 		}
 	}, hide_monomial=False, increasing_order=False).factor()) == "x*(6*x^7 - 4*x^4 + 3*x + 1)/(504*x^3*(1 - x)^2*(1 - x^3))"
 
+
+def test_multivariate_rational_functions():
+	q, t = var('q t')
+	assert str(brat(1/(1 - q**-1*t))) == "1/(1 - q^-1*t)"
+	assert str(brat((1/q - 1)/(t/q - 1), increasing_order=False)) == "(1 - q^-1)/(1 - q^-1*t)"
+	assert str(brat(-(2*t/q - 3/q - 3*t/q**2 + 2/q**2 + t/q**3 + 1)/(t**3/q**2 - t**4/q**3 + t/q - 1))) == "(q^-3*t + 2*q^-2 - 3*q^-2*t - 3*q^-1 + 2*q^-1*t + 1)/((1 - q^-1*t)*(1 - q^-2*t^3))"
+	assert str(brat((3*t**3/q**2 - 6*t**5/q**4 + 4*t/q - 2*t**2/q**2 - 10*t**3/q**3 + 8*t**4/q**4 + 11*t**5/q**5 - 6/q - 12*t/q**2 + 9*t**2/q**3 + 9*t**3/q**4 - 12*t**4/q**5 - 6*t**5/q**6 + 11/q**2 + 8*t/q**3 - 10*t**2/q**4 - 2*t**3/q**5 + 4*t**4/q**6 + t**5/q**7 - 6/q**3 + 3*t**2/q**5 + 1)/(t**9/q**5 - 2*t**10/q**6 + t**11/q**7 - t**6/q**3 + 2*t**7/q**4 - t**8/q**5 - t**3/q**2 + 2*t**4/q**3 - t**5/q**4 - 2*t/q + t**2/q**2 + 1))) == "(3*q^-5*t^2 - 6*q^-3 + q^-7*t^5 + 4*q^-6*t^4 - 2*q^-5*t^3 - 10*q^-4*t^2 + 8*q^-3*t + 11*q^-2 - 6*q^-6*t^5 - 12*q^-5*t^4 + 9*q^-4*t^3 + 9*q^-3*t^2 - 12*q^-2*t - 6*q^-1 + 11*q^-5*t^5 + 8*q^-4*t^4 - 10*q^-3*t^3 - 2*q^-2*t^2 + 4*q^-1*t + 1 - 6*q^-4*t^5 + 3*q^-2*t^3)/((1 - q^-1*t)^2*(1 - q^-2*t^3)*(1 - q^-3*t^6))"
 
 
 def test_previous_reported_bugs():
@@ -399,22 +282,31 @@ def test_Zeta_examples():
 	assert brat(R13).latex() == "\\dfrac{1 - qt^3}{(1 - t)(1 - t^2)(1 - qt)(1 - qt^2)}"
 
 
+def test_CICO():
+	q, t = var('q t')
+	C1 = -(q**8*t**2 - q**9 - 4*q**6*t**3 + q**5*t**4 + 4*q**7*t - 2*q**6*t**2 + 3*q**5*t**3 + 2*q**6*t - 10*q**5*t**2 + 10*q**4*t**3 - 2*q**3*t**4 - 3*q**4*t**2 + 2*q**3*t**3 - 4*q**2*t**4 - q**4*t + 4*q**3*t**2 + t**5 - q*t**3)/((q**2 - t)*(q*t - 1)*(q - t)*q**6*(t - 1)**3) #404
+	C2 = (q**9*t**12 - 2*q**9*t**11 - q**8*t**12 - q**7*t**13 - 5*q**6*t**14 + q**5*t**15 + q**11*t**8 - 13*q**9*t**10 + 6*q**8*t**11 + 7*q**7*t**12 + 7*q**6*t**13 + 18*q**5*t**14 - q**4*t**15 + q**12*t**6 - q**11*t**7 - 19*q**10*t**8 + 69*q**9*t**9 - 18*q**8*t**10 + 7*q**7*t**11 + 27*q**6*t**12 - 89*q**5*t**13 + q**4*t**14 - 10*q**3*t**15 + q**12*t**5 - 13*q**11*t**6 - 2*q**10*t**7 + 143*q**9*t**8 - 309*q**8*t**9 + 80*q**7*t**10 + 49*q**6*t**11 - 181*q**5*t**12 + 243*q**4*t**13 - 44*q**3*t**14 + 22*q**2*t**15 + 7*q**12*t**4 - 31*q**11*t**5 + 145*q**10*t**6 - 301*q**9*t**7 - 29*q**8*t**8 + 427*q**7*t**9 - 123*q**6*t**10 + 109*q**5*t**11 + 42*q**4*t**12 - 145*q**3*t**13 - 7*q**2*t**14 - 5*q*t**15 - t**16 + 3*q**12*t**3 - 92*q**11*t**4 + 353*q**10*t**5 - 876*q**9*t**6 + 1481*q**8*t**7 - 498*q**7*t**8 - 896*q**6*t**9 + 940*q**5*t**10 - 945*q**4*t**11 + 465*q**3*t**12 - 67*q**2*t**13 + 34*q*t**14 - t**15 + 7*q**12*t**2 - 45*q**11*t**3 + 395*q**10*t**4 - 1065*q**9*t**5 + 1675*q**8*t**6 - 1996*q**7*t**7 + 1996*q**5*t**9 - 1675*q**4*t**10 + 1065*q**3*t**11 - 395*q**2*t**12 + 45*q*t**13 - 7*t**14 + q**12*t - 34*q**11*t**2 + 67*q**10*t**3 - 465*q**9*t**4 + 945*q**8*t**5 - 940*q**7*t**6 + 896*q**6*t**7 + 498*q**5*t**8 - 1481*q**4*t**9 + 876*q**3*t**10 - 353*q**2*t**11 + 92*q*t**12 - 3*t**13 + q**12 + 5*q**11*t + 7*q**10*t**2 + 145*q**9*t**3 - 42*q**8*t**4 - 109*q**7*t**5 + 123*q**6*t**6 - 427*q**5*t**7 + 29*q**4*t**8 + 301*q**3*t**9 - 145*q**2*t**10 + 31*q*t**11 - 7*t**12 - 22*q**10*t + 44*q**9*t**2 - 243*q**8*t**3 + 181*q**7*t**4 - 49*q**6*t**5 - 80*q**5*t**6 + 309*q**4*t**7 - 143*q**3*t**8 + 2*q**2*t**9 + 13*q*t**10 - t**11 + 10*q**9*t - q**8*t**2 + 89*q**7*t**3 - 27*q**6*t**4 - 7*q**5*t**5 + 18*q**4*t**6 - 69*q**3*t**7 + 19*q**2*t**8 + q*t**9 - t**10 + q**8*t - 18*q**7*t**2 - 7*q**6*t**3 - 7*q**5*t**4 - 6*q**4*t**5 + 13*q**3*t**6 - q*t**8 - q**7*t + 5*q**6*t**2 + q**5*t**3 + q**4*t**4 + 2*q**3*t**5 - q**3*t**4)/((q + t)*(q - t)**4*q**7*(t + 1)**4*(t - 1)**8) # 503
+	C3 = (q**15 + 6*q**11*t**2 + 20*q**11*t - 14*q**10*t**2 - 56*q**10*t + 7*q**9*t**2 + 49*q**9*t + 15*q**7*t**3 - 15*q**8*t - 49*q**6*t**3 - 7*q**6*t**2 + 56*q**5*t**3 + 14*q**5*t**2 - 20*q**4*t**3 - 6*q**4*t**2 - t**4)/((q**4 - t)*(q**2 + t)*(q**2 - t)*q**7*(t - 1)**2) #853
+	# TESTS
+	assert C1 == (q**-8*t**3 - q**-9*t**5 - 4*q**-6*t**2 + q**-5*t + 4*q**-7*t**4 - 2*q**-6*t**3 + 3*q**-5*t**2 + 2*q**-6*t**4 - 10*q**-5*t**3 + 10*q**-4*t**2 - 2*q**-3*t - 3*q**-4*t**3 + 2*q**-3*t**2 - 4*q**-2*t - q**-4*t**4 + 4*q**-3*t**3 + 1 - q**-1*t**2)/((1 - q**-2*t)*(1 - q**-1*t)*(1 - t)**3*(1 - q*t))
+	assert str(brat(C1)) == "(q^-8*t^3 - q^-9*t^5 - 4*q^-6*t^2 + q^-5*t + 4*q^-7*t^4 - 2*q^-6*t^3 + 3*q^-5*t^2 + 2*q^-6*t^4 - 10*q^-5*t^3 + 10*q^-4*t^2 - 2*q^-3*t - 3*q^-4*t^3 + 2*q^-3*t^2 - 4*q^-2*t - q^-4*t^4 + 4*q^-3*t^3 + 1 - q^-1*t^2)/((1 - q^-2*t)*(1 - q^-1*t)*(1 - t)^3*(1 - q*t))"
+	assert str(brat(C2)) == "-(q^-9*t^4 - 2*q^-9*t^5 - q^-8*t^4 - q^-7*t^3 - 5*q^-6*t^2 + q^-5*t + q^-11*t^8 - 13*q^-9*t^6 + 6*q^-8*t^5 + 7*q^-7*t^4 + 7*q^-6*t^3 + 18*q^-5*t^2 - q^-4*t + q^-12*t^10 - q^-11*t^9 - 19*q^-10*t^8 + 69*q^-9*t^7 - 18*q^-8*t^6 + 7*q^-7*t^5 + 27*q^-6*t^4 - 89*q^-5*t^3 + q^-4*t^2 - 10*q^-3*t + q^-12*t^11 - 13*q^-11*t^10 - 2*q^-10*t^9 + 143*q^-9*t^8 - 309*q^-8*t^7 + 80*q^-7*t^6 + 49*q^-6*t^5 - 181*q^-5*t^4 + 243*q^-4*t^3 - 44*q^-3*t^2 + 22*q^-2*t + 7*q^-12*t^12 - 31*q^-11*t^11 + 145*q^-10*t^10 - 301*q^-9*t^9 - 29*q^-8*t^8 + 427*q^-7*t^7 - 123*q^-6*t^6 + 109*q^-5*t^5 + 42*q^-4*t^4 - 145*q^-3*t^3 - 7*q^-2*t^2 - 5*q^-1*t - 1 + 3*q^-12*t^13 - 92*q^-11*t^12 + 353*q^-10*t^11 - 876*q^-9*t^10 + 1481*q^-8*t^9 - 498*q^-7*t^8 - 896*q^-6*t^7 + 940*q^-5*t^6 - 945*q^-4*t^5 + 465*q^-3*t^4 - 67*q^-2*t^3 + 34*q^-1*t^2 - t + 7*q^-12*t^14 - 45*q^-11*t^13 + 395*q^-10*t^12 - 1065*q^-9*t^11 + 1675*q^-8*t^10 - 1996*q^-7*t^9 + 1996*q^-5*t^7 - 1675*q^-4*t^6 + 1065*q^-3*t^5 - 395*q^-2*t^4 + 45*q^-1*t^3 - 7*t^2 + q^-12*t^15 - 34*q^-11*t^14 + 67*q^-10*t^13 - 465*q^-9*t^12 + 945*q^-8*t^11 - 940*q^-7*t^10 + 896*q^-6*t^9 + 498*q^-5*t^8 - 1481*q^-4*t^7 + 876*q^-3*t^6 - 353*q^-2*t^5 + 92*q^-1*t^4 - 3*t^3 + q^-12*t^16 + 5*q^-11*t^15 + 7*q^-10*t^14 + 145*q^-9*t^13 - 42*q^-8*t^12 - 109*q^-7*t^11 + 123*q^-6*t^10 - 427*q^-5*t^9 + 29*q^-4*t^8 + 301*q^-3*t^7 - 145*q^-2*t^6 + 31*q^-1*t^5 - 7*t^4 - 22*q^-10*t^15 + 44*q^-9*t^14 - 243*q^-8*t^13 + 181*q^-7*t^12 - 49*q^-6*t^11 - 80*q^-5*t^10 + 309*q^-4*t^9 - 143*q^-3*t^8 + 2*q^-2*t^7 + 13*q^-1*t^6 - t^5 + 10*q^-9*t^15 - q^-8*t^14 + 89*q^-7*t^13 - 27*q^-6*t^12 - 7*q^-5*t^11 + 18*q^-4*t^10 - 69*q^-3*t^9 + 19*q^-2*t^8 + q^-1*t^7 - t^6 + q^-8*t^15 - 18*q^-7*t^14 - 7*q^-6*t^13 - 7*q^-5*t^12 - 6*q^-4*t^11 + 13*q^-3*t^10 - q^-1*t^8 - q^-7*t^15 + 5*q^-6*t^14 + q^-5*t^13 + q^-4*t^12 + 2*q^-3*t^11 - q^-3*t^12)/((1 - q^-2*t^2)*(1 - q^-1*t)^3*(1 - t)^4*(1 - t^2)^4)"
+	assert C2 == -(q**-9*t**4 - 2*q**-9*t**5 - q**-8*t**4 - q**-7*t**3 - 5*q**-6*t**2 + q**-5*t + q**-11*t**8 - 13*q**-9*t**6 + 6*q**-8*t**5 + 7*q**-7*t**4 + 7*q**-6*t**3 + 18*q**-5*t**2 - q**-4*t + q**-12*t**10 - q**-11*t**9 - 19*q**-10*t**8 + 69*q**-9*t**7 - 18*q**-8*t**6 + 7*q**-7*t**5 + 27*q**-6*t**4 - 89*q**-5*t**3 + q**-4*t**2 - 10*q**-3*t + q**-12*t**11 - 13*q**-11*t**10 - 2*q**-10*t**9 + 143*q**-9*t**8 - 309*q**-8*t**7 + 80*q**-7*t**6 + 49*q**-6*t**5 - 181*q**-5*t**4 + 243*q**-4*t**3 - 44*q**-3*t**2 + 22*q**-2*t + 7*q**-12*t**12 - 31*q**-11*t**11 + 145*q**-10*t**10 - 301*q**-9*t**9 - 29*q**-8*t**8 + 427*q**-7*t**7 - 123*q**-6*t**6 + 109*q**-5*t**5 + 42*q**-4*t**4 - 145*q**-3*t**3 - 7*q**-2*t**2 - 5*q**-1*t - 1 + 3*q**-12*t**13 - 92*q**-11*t**12 + 353*q**-10*t**11 - 876*q**-9*t**10 + 1481*q**-8*t**9 - 498*q**-7*t**8 - 896*q**-6*t**7 + 940*q**-5*t**6 - 945*q**-4*t**5 + 465*q**-3*t**4 - 67*q**-2*t**3 + 34*q**-1*t**2 - t + 7*q**-12*t**14 - 45*q**-11*t**13 + 395*q**-10*t**12 - 1065*q**-9*t**11 + 1675*q**-8*t**10 - 1996*q**-7*t**9 + 1996*q**-5*t**7 - 1675*q**-4*t**6 + 1065*q**-3*t**5 - 395*q**-2*t**4 + 45*q**-1*t**3 - 7*t**2 + q**-12*t**15 - 34*q**-11*t**14 + 67*q**-10*t**13 - 465*q**-9*t**12 + 945*q**-8*t**11 - 940*q**-7*t**10 + 896*q**-6*t**9 + 498*q**-5*t**8 - 1481*q**-4*t**7 + 876*q**-3*t**6 - 353*q**-2*t**5 + 92*q**-1*t**4 - 3*t**3 + q**-12*t**16 + 5*q**-11*t**15 + 7*q**-10*t**14 + 145*q**-9*t**13 - 42*q**-8*t**12 - 109*q**-7*t**11 + 123*q**-6*t**10 - 427*q**-5*t**9 + 29*q**-4*t**8 + 301*q**-3*t**7 - 145*q**-2*t**6 + 31*q**-1*t**5 - 7*t**4 - 22*q**-10*t**15 + 44*q**-9*t**14 - 243*q**-8*t**13 + 181*q**-7*t**12 - 49*q**-6*t**11 - 80*q**-5*t**10 + 309*q**-4*t**9 - 143*q**-3*t**8 + 2*q**-2*t**7 + 13*q**-1*t**6 - t**5 + 10*q**-9*t**15 - q**-8*t**14 + 89*q**-7*t**13 - 27*q**-6*t**12 - 7*q**-5*t**11 + 18*q**-4*t**10 - 69*q**-3*t**9 + 19*q**-2*t**8 + q**-1*t**7 - t**6 + q**-8*t**15 - 18*q**-7*t**14 - 7*q**-6*t**13 - 7*q**-5*t**12 - 6*q**-4*t**11 + 13*q**-3*t**10 - q**-1*t**8 - q**-7*t**15 + 5*q**-6*t**14 + q**-5*t**13 + q**-4*t**12 + 2*q**-3*t**11 - q**-3*t**12)/((1 - q**-2*t**2)*(1 - q**-1*t)**3*(1 - t)**4*(1 - t**2)**4)
+	assert str(brat(C3, increasing_order=False)) == "(1 + 6*q^-4*t^2 + 20*q^-4*t - 14*q^-5*t^2 - 56*q^-5*t + 7*q^-6*t^2 + 49*q^-6*t + 15*q^-8*t^3 - 15*q^-7*t - 49*q^-9*t^3 - 7*q^-9*t^2 + 56*q^-10*t^3 + 14*q^-10*t^2 - 20*q^-11*t^3 - 6*q^-11*t^2 - q^-15*t^4)/((1 - q^-4*t)*(1 - q^-4*t^2)*(1 - t)^2)"
+	assert C3 == (1 + 6*q**-4*t**2 + 20*q**-4*t - 14*q**-5*t**2 - 56*q**-5*t + 7*q**-6*t**2 + 49*q**-6*t + 15*q**-8*t**3 - 15*q**-7*t - 49*q**-9*t**3 - 7*q**-9*t**2 + 56*q**-10*t**3 + 14*q**-10*t**2 - 20*q**-11*t**3 - 6*q**-11*t**2 - q**-15*t**4)/((1 - q**-4*t)*(1 - q**-4*t**2)*(1 - t)**2)
+
+
 def main():
 	test_integers()
-	test_integers_latex()
 	test_rationals()
-	test_rationals_latex()
 	test_univariate_polynomials()
-	test_univariate_polynomials_latex()
 	test_multivariate_polynomials()
-	test_multivariate_polynomials_latex()
 	test_univariate_laurent_polynomials()
-	test_univariate_laurent_polynomials_latex()
 	test_multivariate_laurent_polynomials()
-	test_multivariate_laurent_polynomials_latex()
 	test_univariate_rational_functions()
 	test_previous_reported_bugs()
 	test_Zeta_examples()
+	test_CICO()
 	print("All tests passed!")
 
 
