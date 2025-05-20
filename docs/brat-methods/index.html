@@ -160,8 +160,9 @@ sage: f.denominator()
 <h2 id="denominator_signature">.denominator_signature</h2>
 <p>Returns the dictionary signature for the denominator. The format of the dictionary is as follows. The keys are </p>
 <ul>
-<li>"monomial": rational number,</li>
-<li>"factors": dictionary with keys given by vectors and values in the positive integers. </li>
+<li>"coefficient": a positive integer.</li>
+<li>"monomial": a degree tuple.</li>
+<li>"factors": dictionary with keys given by tuples and values in the positive integers. </li>
 </ul>
 <h4 id="example_1">Example</h4>
 <p>If the variables are ordered as $(x,y,z)$ and the denominator is 
@@ -306,7 +307,7 @@ sage: F.latex()
  '(1 - t)(1 - t^2)(1 - t^3)(1 - t^4)(1 - t^5)')
 </code></pre>
 <h2 id="numerator">.numerator</h2>
-<p>Returns the polynomial in the numerator of the rational function. This is not necessarily reduced.</p>
+<p>Returns the polynomial in the numerator of the rational function as a <code>brat</code>.</p>
 <h3 id="example_5">Example</h3>
 <p>We build a <code>brat</code> for the following rational function and extract the numerator:
 [ 
@@ -320,7 +321,7 @@ sage: f = br.brat(
 sage: f
 (1 + x*y^2)/(1 - x^2*y^4)
 sage: f.numerator()
-x*y^2 + 1
+1 + x*y^2
 </code></pre>
 <h2 id="rational_function">.rational_function</h2>
 <p>Returns the reduced rational function. The underlying type of this object is not a <code>brat</code>. </p>

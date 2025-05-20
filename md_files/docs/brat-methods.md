@@ -222,7 +222,7 @@ sage: F.latex(split=True)
 
 ## .numerator
 
-Returns the polynomial in the numerator of the rational function. This is not necessarily reduced.
+Returns the polynomial in the numerator of the rational function as a `brat`.
 
 ### Example
 
@@ -240,7 +240,7 @@ sage: f = br.brat(
 sage: f
 (1 + x*y^2)/(1 - x^2*y^4)
 sage: f.numerator()
-x*y^2 + 1
+1 + x*y^2
 ```
 
 ## .rational_function

@@ -635,7 +635,7 @@ def brat_to_str(B, latex=False) -> str:
 			B.increasing_order,
 			latex,
 		)
-		sig = B._d_sig
+		sig = copy(B._d_sig)
 		sig["monomial"] = tuple([0]*len(B._ring.gens()))
 	else:
 		N = numerator(
@@ -973,7 +973,7 @@ class brat:
 		return self.latex(factor=self._factor)
 	
 	def numerator(self):
-			r"""Returns the polynomial in the numerator of the rational function. This is not necessarily reduced.
+			r"""Returns the polynomial in the numerator of the rational function as a ``brat``.
 
 			EXAMPLE::
 
@@ -985,9 +985,26 @@ class brat:
 				sage: f
 				(1 + x*y^2)/(1 - x^2*y^4)
 				sage: f.numerator()
-				x*y^2 + 1
+				1 + x*y^2
 			"""
-			return self._n_poly
+			B = copy(self)
+			B._d_sig["coefficient"] = 1
+			B._d_sig["factors"] = {}
+			match B._type.name:
+				case "RATIONAL":
+					B._type = brat_type("i")
+				case "RATIONAL_POLY":
+					B._type = brat_type("ip")
+			if B.hide_monomial:
+				if list(B._d_sig["monomial"]) != [0]*len(B._ring.gens()):
+					B._type = brat_type("ilp")
+				else:
+					B._type = brat_type("ip")
+				return B
+			if B._type.name != "INTEGER":
+				B._type = brat_type("ip")
+			B._d_sig["monomial"] = tuple([0]*len(B._ring.gens()))
+			return B
 		
 	def rational_function(self):
 		r"""Returns the reduced rational function. The underlying type of this object is not a ``brat``.
