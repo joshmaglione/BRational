@@ -807,23 +807,6 @@ class brat:
 	
 	def __ne__(self, other):
 		return not self == other
-	
-	def denominator(self):
-		r"""Returns the polynomial in the denominator of the rational function. This is not necessarily reduced.
-
-		EXAMPLE::
-
-			sage: x, y = polygens(QQ, 'x,y')
-			sage: f = br.brat(
-				numerator=1 + x*y^2,
-				denominator=1 - x^2*y^4
-			)
-			sage: f
-			(1 + x*y^2)/(1 - x^2*y^4)
-			sage: f.denominator()
-			-x^2*y^4 + 1
-		"""
-		return unfold_signature(self._ring, self._d_sig)
 
 	def denominator_signature(self):
 		r"""Returns the dictionary signature for the denominator. The format of the dictionary is as follows. The keys are 
@@ -839,8 +822,9 @@ class brat:
 			sage: F
 			1/(3*(1 - x^2)^5*(1 - x*y*z)*(1 - x^2*y)*(1 - y^4)^3)
 			sage: F.denominator_signature()
-			{'monomial': 3,
-			'factors': {(2, 0, 0): 5, (0, 4, 0): 3, (1, 1, 1): 1, (2, 1, 0): 1}}
+			{'coefficient': 3,
+ 			 'monomial': (0, 0, 0),
+ 			 'factors': {(2, 0, 0): 5, (0, 4, 0): 3, (1, 1, 1): 1, (2, 1, 0): 1}}
 		"""
 		return self._d_sig
 
@@ -967,44 +951,43 @@ class brat:
 			return (N, D)
 		return latex_str.replace('@', '')
 
-	
 	# Just for SageMath's `pretty_print` function
 	def _latex_(self):
 		return self.latex(factor=self._factor)
 	
 	def numerator(self):
-			r"""Returns the polynomial in the numerator of the rational function as a ``brat``.
+		r"""Returns the polynomial in the numerator of the rational function as a ``brat``.
 
-			EXAMPLE::
+		EXAMPLE::
 
-				sage: x, y = polygens(QQ, 'x,y')
-				sage: f = br.brat(
-					numerator=1 + x*y^2,
-					denominator=1 - x^2*y^4
-				)
-				sage: f
-				(1 + x*y^2)/(1 - x^2*y^4)
-				sage: f.numerator()
-				1 + x*y^2
-			"""
-			B = copy(self)
-			B._d_sig["coefficient"] = 1
-			B._d_sig["factors"] = {}
-			match B._type.name:
-				case "RATIONAL":
-					B._type = brat_type("i")
-				case "RATIONAL_POLY":
-					B._type = brat_type("ip")
-			if B.hide_monomial:
-				if list(B._d_sig["monomial"]) != [0]*len(B._ring.gens()):
-					B._type = brat_type("ilp")
-				else:
-					B._type = brat_type("ip")
-				return B
-			if B._type.name != "INTEGER":
+			sage: x, y = polygens(QQ, 'x,y')
+			sage: f = br.brat(
+				numerator=1 + x*y^2,
+				denominator=1 - x^2*y^4
+			)
+			sage: f
+			(1 + x*y^2)/(1 - x^2*y^4)
+			sage: f.numerator()
+			1 + x*y^2
+		"""
+		B = copy(self)
+		B._d_sig["coefficient"] = 1
+		B._d_sig["factors"] = {}
+		match B._type.name:
+			case "RATIONAL":
+				B._type = brat_type("i")
+			case "RATIONAL_POLY":
 				B._type = brat_type("ip")
-			B._d_sig["monomial"] = tuple([0]*len(B._ring.gens()))
+		if B.hide_monomial:
+			if list(B._d_sig["monomial"]) != [0]*len(B._ring.gens()):
+				B._type = brat_type("ilp")
+			else:
+				B._type = brat_type("ip")
 			return B
+		if B._type.name != "INTEGER":
+			B._type = brat_type("ip")
+		B._d_sig["monomial"] = tuple([0]*len(B._ring.gens()))
+		return B
 		
 	def rational_function(self):
 		r"""Returns the reduced rational function. The underlying type of this object is not a ``brat``.

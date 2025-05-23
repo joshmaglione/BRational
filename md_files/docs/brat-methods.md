@@ -2,29 +2,6 @@
 
 We describe all of the methods associated with the class `brat` together with an example. 
 
-## .denominator
-
-Returns the polynomial in the denominator of the rational function. This is not necessarily reduced.
-
-### Example
-
-We build a `brat` for the following rational function and extract the denominator:
-\[ 
-	f(x,y) = \dfrac{1 + xy^2}{1 - x^2y^4}. 
-\]
-
-```python
-sage: x, y = polygens(QQ, 'x,y')
-sage: f = br.brat(
-	numerator=1 + x*y^2,
-	denominator=1 - x^2*y^4
-)
-sage: f
-(1 + x*y^2)/(1 - x^2*y^4)
-sage: f.denominator()
--x^2*y^4 + 1
-```
-
 ## .denominator_signature
 
 Returns the dictionary signature for the denominator. The format of the dictionary is as follows. The keys are 
