@@ -128,7 +128,7 @@
 <li>$m\in\N_0$, </li>
 <li>$\alpha_i\in\mathbb{Z}^n$, where $\bm{X}^{\alpha_i} = X_1^{\alpha_{i,1}}\cdots X_n^{\alpha_{i,n}}$.</li>
 </ul>
-<p>The (ordered) keyword arguments for <code>brat</code> are</p>
+<p>The keyword arguments for <code>brat</code> are</p>
 <ul>
 <li><code>rational_expression</code>: the rational function (default: <code>None</code>),</li>
 <li><code>numerator</code>: the numerator polynomial of the rational function (default: <code>None</code>),</li>
@@ -138,7 +138,11 @@
 <li><code>increasing_order</code>: whether to display polynomials in increasing degree (default: <code>True</code>),</li>
 <li><code>hide_monomial</code>: whether to absorb the monomial in the denominator into the numerator (default: <code>True</code>).</li>
 </ul>
-<p><em>Additional notes</em>. The <code>denominator_signature</code> must be a dictionary whose keys are tuples of non-negative integers and whose keys are non-negative integers. If given a <code>denominator_signature</code>, the <code>numerator</code> will be used to determine the accepted ordered variables. [We do this by looking to its parent ring if <code>numerator</code> is a polynomial, or at the variables present if a symbolic expression.] Examples of acceptable <code>denominator_signature</code> are given in <a href="#example-3">Example 3</a> and in the <a href="../brat-methods/#denominator_signature">denominator_signature</a> method.</p>
+<p><em>Additional notes</em>. The <code>denominator_signature</code> must be a dictionary whose keys are 
+- <code>"coefficient"</code>: an integer,
+- <code>"monomial"</code>: a tuple of non-negative integers with length matching the number of variables,
+- <code>"factors"</code>: a dictionary whose keys are tuples of integers with values of non-negative integers.</p>
+<p>Examples of acceptable <code>denominator_signature</code> are given in <a href="#example-3">Example 3</a> and in the <a href="../brat-methods/#denominator_signature">denominator_signature</a> method.</p>
 <h2 id="algebraic-operations-and-relations">Algebraic operations and relations</h2>
 <p>One can use the usual algebraic operations with <code>brat</code>: add, subtract, multiply, divide (i.e. 'true' divide), powers. The Boolean relations <code>==</code> and <code>!=</code> can also be used. When adding a <code>brat</code> with something else, we attempt to make another <code>brat</code> object. To "opt out", use the method <code>rational_function</code>. </p>
 <p><strong>Warning:</strong> we cannot do anything about algebraic operations where the first object is <em>not</em> a <code>brat</code> object. For example, if <code>F</code> is a <code>brat</code> but <code>G</code> is a polynomial in SageMath, then <code>G + F</code> may raise errors, while <code>F + G</code> will attempt to add the two objects&mdash;other errors may arise.</p>

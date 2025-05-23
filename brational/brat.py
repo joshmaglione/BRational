@@ -677,6 +677,16 @@ class brat:
 			increasing_order:bool=True,
 			hide_monomial:bool=True,
 		):
+		# Don't give me too much! 
+		if rational_expression is not None and numerator is not None:
+			raise ValueError("Do not provide a rational expression and a numerator.")
+		if rational_expression is not None and denominator is not None:
+			raise ValueError("Do not provide a rational expression and a denominator.")
+		if rational_expression is not None and denominator_signature is not None:
+			raise ValueError("Do not provide a rational expression and a denominator signature.")
+		if denominator is not None and denominator_signature is not None:
+			raise ValueError("Do not provide a denominator and a denominator signature.")
+
 		# First we remove zero denominator
 		if is_denominator_zero(denominator, denominator_signature):
 			raise ValueError("Denominator cannot be zero.")

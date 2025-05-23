@@ -15,7 +15,7 @@ where the following hold:
 - $\alpha_i\in\mathbb{Z}^n$, where $\bm{X}^{\alpha_i} = X_1^{\alpha_{i,1}}\cdots X_n^{\alpha_{i,n}}$.
 
 
-The (ordered) keyword arguments for `brat` are
+The keyword arguments for `brat` are
 
 - `rational_expression`: the rational function (default: `None`),
 - `numerator`: the numerator polynomial of the rational function (default: `None`),
@@ -25,7 +25,12 @@ The (ordered) keyword arguments for `brat` are
 - `increasing_order`: whether to display polynomials in increasing degree (default: `True`),
 - `hide_monomial`: whether to absorb the monomial in the denominator into the numerator (default: `True`).
 
-*Additional notes*. The `denominator_signature` must be a dictionary whose keys are tuples of non-negative integers and whose keys are non-negative integers. If given a `denominator_signature`, the `numerator` will be used to determine the accepted ordered variables. [We do this by looking to its parent ring if `numerator` is a polynomial, or at the variables present if a symbolic expression.] Examples of acceptable `denominator_signature` are given in [Example 3](#example-3) and in the [denominator_signature](brat-methods.md#denominator_signature) method.
+*Additional notes*. The `denominator_signature` must be a dictionary whose keys are 
+- `"coefficient"`: an integer,
+- `"monomial"`: a tuple of non-negative integers with length matching the number of variables,
+- `"factors"`: a dictionary whose keys are tuples of integers with values of non-negative integers.
+
+Examples of acceptable `denominator_signature` are given in [Example 3](#example-3) and in the [denominator_signature](brat-methods.md#denominator_signature) method.
 
 ## Algebraic operations and relations
 
