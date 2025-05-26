@@ -46,7 +46,6 @@ def remove_unnecessary_braces_and_spaces(latex_text):
 	]
 	return reduce(lambda x, y: y[0].sub(y[1], x), pairs, latex_text)
 
-
 class brat_type(Enum):      
     #                           p.d. = positive degree 
     #                           n.d. = non-negative degree

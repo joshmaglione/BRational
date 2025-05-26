@@ -635,7 +635,7 @@ def brat_to_str(B, latex=False) -> str:
 			B.increasing_order,
 			latex,
 		)
-		sig = copy(B._d_sig)
+		sig = deep_sig_copy(B._d_sig)
 		sig["monomial"] = tuple([0]*len(B._ring.gens()))
 	else:
 		N = numerator(
@@ -817,7 +817,24 @@ class brat:
 	
 	def __ne__(self, other):
 		return not self == other
+	
+	def denominator(self):
+		r"""Returns the polynomial in the denominator of the rational function. This is not necessarily reduced.
 
+		EXAMPLE::
+
+			sage: x, y = polygens(QQ, 'x,y')
+			sage: f = br.brat(
+				numerator=1 + x*y^2,
+				denominator=1 - x^2*y^4
+			)
+			sage: f
+			(1 + x*y^2)/(1 - x^2*y^4)
+			sage: f.denominator()
+			-x^2*y^4 + 1
+		"""
+		return unfold_signature(self._ring, self._d_sig)
+	
 	def denominator_signature(self):
 		r"""Returns the dictionary signature for the denominator. The format of the dictionary is as follows. The keys are 
 
@@ -841,7 +858,7 @@ class brat:
 	def factor(self):
 		r"""Returns a new ``brat`` object with the numerator polynomial factored.
 		"""
-		B = copy(self)
+		B = deep_brat_copy(self)
 		B._factor = True
 		return B
 
@@ -980,7 +997,7 @@ class brat:
 			sage: f.numerator()
 			1 + x*y^2
 		"""
-		B = copy(self)
+		B = deep_brat_copy(self)
 		B._d_sig["coefficient"] = 1
 		B._d_sig["factors"] = {}
 		match B._type.name:
@@ -1014,7 +1031,7 @@ class brat:
 			sage: f.rational_function()
 			1/(-x*y^2 + 1) 
 		"""
-		return self._n_poly / self.denominator()
+		return self._n_poly / unfold_signature(self._ring, self._d_sig)
 	
 	def subs(self, S:dict):
 		r"""Given a dictionary of the desired substitutions, return the new ``brat`` obtained by performing the substitutions. 
@@ -1143,3 +1160,20 @@ class brat:
 		if save_message:
 			print(f"File saved as {filename}.")
 		return None
+	
+def deep_sig_copy(sig:dict) -> dict:
+	return {
+		"coefficient": sig["coefficient"],
+		"monomial": sig["monomial"],
+		"factors": {k: v for k, v in sig["factors"].items()},
+	}
+
+def deep_brat_copy(B:brat) -> brat:
+	B_new = brat(
+		numerator=B._n_poly, 
+		denominator_signature=deep_sig_copy(B._d_sig), 
+		hide_monomial=B.hide_monomial,
+		increasing_order=B.increasing_order,
+	)
+	B_new._factor = B._factor
+	return B_new
