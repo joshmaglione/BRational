@@ -836,7 +836,12 @@ class brat:
 			sage: f.denominator()
 			-x^2*y^4 + 1
 		"""
-		return unfold_signature(self._ring, self._d_sig)
+		new_sig = deep_sig_copy(self._d_sig)
+		if self.hide_monomial:
+			new_sig["monomial"] = tuple(
+				[0]*(len(new_sig["monomial"]))
+			)
+		return brat(unfold_signature(self._ring, new_sig))
 	
 	def denominator_signature(self):
 		r"""Returns the dictionary signature for the denominator. The format of the dictionary is as follows. The keys are 
