@@ -4,7 +4,7 @@
 #   Distributed under MIT License
 #
 
-from sage.all import ZZ, SR, QQ, PolynomialRing, prod, vector, copy
+from sage.all import ZZ, SR, QQ, PolynomialRing, prod, vector
 from sage.all import latex as LaTeX
 from .util import my_print, DEBUG, brat_type, parenthesis_wrap, remove_unnecessary_braces_and_spaces
 
@@ -317,8 +317,11 @@ def process_input(num, dem=None, sig=None, fix=True):
 	P = PolynomialRing(QQ, varbs)
 
 	if dem is None:		# Then we are given a signature
+		# Can be given negative exponents, so we take numerator.
+		# Seems pointless but needed if fix = False
 		dem = unfold_signature(P, sig)
 		R /= dem
+		dem = dem.numerator()
 	
 	# Determine the polynomial expressions for the numerator and denominator.
 	if fix:
@@ -819,7 +822,7 @@ class brat:
 		return not self == other
 	
 	def denominator(self):
-		r"""Returns the polynomial in the denominator of the rational function. This is not necessarily reduced.
+		r"""Returns the polynomial in the denominator of the rational function.
 
 		EXAMPLE::
 
