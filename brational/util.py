@@ -9,7 +9,7 @@ from datetime import datetime
 from functools import reduce
 import re
 
-DEBUG = False
+DEBUG = True
 
 def my_print(on:bool, string:str, level:int=0):
     if on:

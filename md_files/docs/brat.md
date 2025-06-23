@@ -1,18 +1,22 @@
 # brat
 
+&emsp;
+
 The class we use to format rational functions is `brat`, and the kinds of rational functions accepted can be expressed as 
 \[ 
-	\dfrac{F(\bm{X})}{C\bm{X}^{\beta} \prod_{i=1}^m(1 - \bm{X}^{\alpha_i})}, 
+	\dfrac{F(\bm{X})}{c\bm{X}^{\beta} \prod_{i=1}^m(1 - \bm{X}^{\alpha_i})}, 
 \] 
 
 where the following hold:
 
 - $\bm{X}=(X_1, \dots, X_n)$ are variables,
 - $F(\bm{X})\in \mathbb{Z}[\bm{X}]$,
-- $C\in \N$, 
+- $c\in \N$, 
 - $\beta\in\N_0^n$,
 - $m\in\N_0$, 
 - $\alpha_i\in\mathbb{Z}^n$, where $\bm{X}^{\alpha_i} = X_1^{\alpha_{i,1}}\cdots X_n^{\alpha_{i,n}}$.
+
+This includes all elements of $\mathbb{Q}[\bm{X}^{\pm 1}]$ for example.
 
 
 The keyword arguments for `brat` are
@@ -26,25 +30,34 @@ The keyword arguments for `brat` are
 - `hide_monomial`: whether to absorb the monomial in the denominator into the numerator (default: `True`).
 
 *Additional notes*. The `denominator_signature` must be a dictionary whose keys are 
+
 - `"coefficient"`: an integer,
 - `"monomial"`: a tuple of non-negative integers with length matching the number of variables,
 - `"factors"`: a dictionary whose keys are tuples of integers with values of non-negative integers.
 
-Examples of acceptable `denominator_signature` are given in [Example 3](#example-3) and in the [denominator_signature](brat-methods.md#denominator_signature) method.
+Examples of acceptable `denominator_signature` are given in [Denominator Signature](#denominator-signature) and in the [denominator_signature](brat-methods.md#denominator_signature) method.
+
+&ensp;
 
 ## Algebraic operations and relations
 
-One can use the usual algebraic operations with `brat`: add, subtract, multiply, divide (i.e. 'true' divide), powers. The Boolean relations `==` and `!=` can also be used. When adding a `brat` with something else, we attempt to make another `brat` object. To "opt out", use the method `rational_function`. 
+One can use the usual algebraic operations with `brat`: add, subtract, multiply, divide (i.e. 'true' divide), powers. The Boolean relations `==` and `!=` can also be used. When adding a `brat` with something else, we attempt to make another `brat` object. 
 
 **Warning:** we cannot do anything about algebraic operations where the first object is *not* a `brat` object. For example, if `F` is a `brat` but `G` is a polynomial in SageMath, then `G + F` may raise errors, while `F + G` will attempt to add the two objects&mdash;other errors may arise.
 
 ---
 
-## Example 1
+# Examples
 
-We expression the rational function
+We build many examples using the `brat` constructor.
+
+&ensp;
+
+## Introduction
+
+We express the rational function
 \[
-	f(x,y)=\dfrac{1 + xy + x^2y^2}{(1 - x)(1 - y)}.
+	f=\dfrac{1 + xy + x^2y^2}{(1 - x)(1 - y)}.
 \]
 First we write this in the usual way, using symbolic variables. 
 
@@ -52,21 +65,23 @@ First we write this in the usual way, using symbolic variables.
 sage: x, y = var('x y')
 sage: f = (1 + x*y + x^2*y^2)/((1 - x)*(1 - y))
 sage: f
-(x^2*y^2 + x*y + 1)/((x - 1)*(y - 1))
+(1 + x*y + x^2*y^2)/((1 - y)*(1 - x))
 ```
 
-Now we build a `brat` from $f(x,y)$.
+Now we build a `brat` from $f$.
 ```python
 sage: F = br.brat(f)
 sage: F
 (1 + x*y + x^2*y^2)/((1 - y)*(1 - x))
 ```
 
-## Example 2
+&ensp;
+
+## Prescribed Denominator I
 
 Now we write the rational function 
 \[
-	g(t) = \dfrac{1 + 4t + 6t^2 + 4t^3 + t^4}{(1 - t)(1 - t^2)(1 - t^3)(1 - t^4)} . 
+	g = \dfrac{1 + 4t + 6t^2 + 4t^3 + t^4}{(1 - t)(1 - t^2)(1 - t^3)(1 - t^4)} . 
 \]
 
 ```python
@@ -104,51 +119,13 @@ sage: br.brat(
 (1 + 2*t - 2*t^3 - t^4)/((1 - t)^3*(1 - t^3)*(1 - t^4))
 ```
 
-## Example 3
+&ensp;
 
-We construct the following rational function using a signature:
-\[
-	h = \dfrac{1}{(1 - X_1)(1 - X_2)^3(1 - X_1X_2X_3)^4(1 - X_1X_2X_3^2)}.
-\]
-
-```python
-sage: R = PolynomialRing(QQ, 'X1,X2,X3')
-sage: H = br.brat(
-	numerator=R(1),
-	denominator_signature={
-		(1, 0, 0): 1, 
-		(0, 1, 0): 3,
-		(1, 1, 1): 4,
-		(1, 1, 2): 1
-	}
-)
-sage: H
-1/((1 - X1)*(1 - X2)^3*(1 - X1*X2*X3)^4*(1 - X1*X2*X3^2))
-```
-
-We can also make the monomial in the signature explicit (and different from $1$).
-```python
-sage: H = br.brat(
-	numerator=R(1),
-	denominator_signature={
-		"monomial": 3,
-		"factors": {
-			(1, 0, 0): 1, 
-			(0, 1, 0): 3,
-			(1, 1, 1): 4,
-			(1, 1, 2): 1
-		}
-	}
-)
-sage: H
-1/(3*(1 - X1)*(1 - X2)^3*(1 - X1*X2*X3)^4*(1 - X1*X2*X3^2))
-```
-
-## Example 4
+## Prescribed denominator II
 
 We construct the following rational function a few different ways:
 \[ 
-	P(T) = \dfrac{1 + 6T + 11T^2 + 6T^3}{(1 - T^4)}. 
+	P = \dfrac{1 + 6T + 11T^2 + 6T^3}{(1 - T^4)}. 
 \]
 
 ```python
@@ -182,7 +159,96 @@ sage: P
 (6*T^3 + 11*T^2 + 6*T + 1)/(1 - T)^4
 ```
 
-## Example (pretty_print)
+&ensp;
+
+## Denominator Signature
+
+We construct the following rational function using a denominator signature:
+\[
+	h = \dfrac{1}{8(1 - X_1)(1 - X_2)^3(1 - X_1X_2X_3)^4(1 - X_1X_2X_3^2)}.
+\]
+
+```python
+sage: R = PolynomialRing(QQ, 'X1,X2,X3')
+sage: d_sig = {
+	"coefficient": 8,
+	"monomial": (0, 0, 0),
+	"factors": {
+		(1, 0, 0): 1, 
+		(0, 1, 0): 3,
+		(1, 1, 1): 4,
+		(1, 1, 2): 1
+	}
+}
+sage: H = br.brat(numerator=R(1), denominator_signature=d_sig)
+sage: H
+1/((1 - X1)*(1 - X2)^3*(1 - X1*X2*X3)^4*(1 - X1*X2*X3^2))
+```
+
+&ensp;
+
+## Negative Exponents I
+
+We express the Igusa zeta function associated with the braid arrangement:
+\[
+	Z_2 = \dfrac{1 - 3q^{-1} + 2q^{-2} + 2q^{-1}t - 3q^{-2}t + q^{-3}t}{(1 - q^{-1}t)(1 - q^{-2}t^3)} . 
+\]
+
+See [Maglione&ndash;Voll](https://arxiv.org/abs/2103.03640) for details.
+
+```python
+sage: q, t = var('q t')
+sage: Z2 = (1 - 3*q^-1 + 2*q^-2 + 2*q^-1*t - 3*q^-2*t + q^-3*t)/((1 - q^-1*t)*(1 - q^-2*t^3))
+sage: Z2
+(2*t/q - 3/q - 3*t/q^2 + 2/q^2 + t/q^3 + 1)/((t^3/q^2 - 1)*(t/q - 1))
+sage: br.brat(Z2)
+(q^-3*t + 2*q^-2 - 3*q^-2*t - 3*q^-1 + 2*q^-1*t + 1)/((1 - q^-1*t)*(1 - q^-2*t^3))
+```
+
+To get the output a little closer to how we have it formatted above, we can set `increasing_order` to `False`.
+
+```python
+sage: br.brat(Z2, increasing_order=False)
+(1 + 2*q^-1*t - 3*q^-1 - 3*q^-2*t + 2*q^-2 + q^-3*t)/((1 - q^-1*t)*(1 - q^-2*t^3))
+```
+
+&ensp;
+
+## Negative Exponents II
+
+We express the ask zeta function associated with the complete graph on four vertices:
+\[
+	W_{minus} = \dfrac{q^3 - t}{q^3(1 - t)(1 - qt)}.
+\]
+
+See [Rossmann&ndash;Voll](https://arxiv.org/abs/1908.09589) for details.
+
+```python
+sage: q, t = var('q t')
+sage: W_minus = (q^3 - t)/(q^3*(1 - t)*(1 - q*t))
+sage: W_minus
+(q^3 - t)/((q*t - 1)*q^3*(t - 1))
+sage: br.brat(W_minus)
+-(q^-3*t - 1)/((1 - t)*(1 - q*t))
+```
+
+If we set `increasing_order` to `False`, then the `1` will be the leading term, and since it has a positive coefficient, we will avoid the negative scalar in front.
+
+```python
+sage: br.brat(W_minus, increasing_order=False)
+(1 - q^-3*t)/((1 - t)*(1 - q*t))
+```
+
+Moreover, if we want to make the factor $q^3$ in the denominator explicit, we can set `hide_monomial` to `False`.
+
+```python
+sage: br.brat(W_minus, increasing_order=False, hide_monomial=False)
+(q^3 - t)/(q^3*(1 - t)*(1 - q*t))
+```
+
+&ensp;
+
+## Pretty Print (pretty_print)
 
 When applying the SageMath function `pretty_print` (or when it is on) in a Jupyter notebook, the brat will be displayed with $\LaTeX$.
 

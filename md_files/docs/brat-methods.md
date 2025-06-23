@@ -1,6 +1,10 @@
 # Methods (brat)
 
-We describe all of the methods associated with the class `brat` together with an example. 
+&emsp;
+
+We describe all of the methods associated with the class `brat` and provide examples.
+
+&ensp;
 
 ## .change_denominator
 
@@ -17,7 +21,7 @@ We construct the following rational function:
 \[ 
 	H = \dfrac{(1 + x^3)(1 + x^4)(1 + x^5)}{(1 - x)(1 - x^2)(1 - x^3)^2(1 - x^4)(1 - x^5)}
 \]
-from a simplified expression. Then we recover this particular expression using `fix_denominator`.
+from a simplified expression. Then we recover this particular expression using `change_denominator`.
 
 ```python
 sage: x = polygens(QQ, 'x')[0]
@@ -29,15 +33,37 @@ sage: H = br.brat(h)
 sage: H
 (1 - 2*x + 2*x^2 - x^3 + x^4 - x^5 + x^7 - x^8 + x^9 - 2*x^10 + 2*x^11 - x^12)/((1 - x)^3*(1 - x^3)^2*(1 - x^4)
 *(1 - x^5))
+```
+
+Note that the denominator is $(1 - x)^3(1 - x^3)^2(1 - x^4)(1 - x^5)$, which is not exactly what we want. 
+
+```python
 sage: H.change_denominator(
-	signature={(1,): 1, (2,): 1, (3,): 2, (4,): 1, (5,): 1}
+	(1 - x) * (1 - x^2) * (1 - x^3)**2 * (1 - x^4) * (1 - x^5)
 )
 (1 + x^3 + x^4 + x^5 + x^7 + x^8 + x^9 + x^12)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
 ```
 
+Equivalently:
+
+```python
+sage: H.change_denominator(
+	signature={
+		"coefficient": 1,
+		"monomial": (0,), 
+		"factors": {
+			(1,): 1, (2,): 1, (3,): 2, (4,): 1, (5,): 1
+		}
+	}
+)
+(1 + x^3 + x^4 + x^5 + x^7 + x^8 + x^9 + x^12)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
+```
+
+&ensp;
+
 ## .denominator
 
-Returns the polynomial in the denominator of the rational function. This is not necessarily reduced.
+Returns the polynomial in the denominator as a `brat`.
 
 ### Example
 
@@ -55,8 +81,10 @@ sage: f = br.brat(
 sage: f
 (1 + x*y^2)/(1 - x^2*y^4)
 sage: f.denominator()
--x^2*y^4 + 1
+1 - x^2*y^4
 ```
+
+&ensp;
 
 ## .denominator_signature
 
@@ -70,19 +98,20 @@ Returns the dictionary signature for the denominator. The format of the dictiona
 
 If the variables are ordered as $(x,y,z)$ and the denominator is 
 \[ 
-	3\cdot (1 - x^2y)(1 - y^4)^3(1 - xyz)(1 - x^2)^5
+	3xy^3(1 - x^2y)(1 - y^4)^3(1 - xyz)(1 - x^2)^5
 \]
 
 Then the dictionary is 
 ```python
-{
-	"monomial": 3
+sage: d_sig = {
+	"coefficient": 3,
+	"monomial": (1, 3, 0),
 	"factors": {
 		(2, 1, 0): 1, 
 		(0, 4, 0): 3, 
 		(1, 1, 1): 1, 
-		(2, 0, 0): 5
-	}
+		(2, 0, 0): 5,
+	},
 }
 ```
 
@@ -90,23 +119,28 @@ We can extract this dictionary by creating a `brat` with numerator `1`.
 
 ```python
 sage: x, y, z = polygens(ZZ, 'x,y,z')
-sage: F = br.brat(1/(3*(1 - x^2*y)*(1 - y^4)^3*(1 - x*y*z)*(1 - x^2)^5))
+sage: F = br.brat(1/(3*x*y^3*(1 - x^2*y)*(1 - y^4)^3*(1 - x*y*z)*(1 - x^2)^5))
 sage: F
-1/(3*(1 - x^2)^5*(1 - x*y*z)*(1 - x^2*y)*(1 - y^4)^3)
+x^-1*y^-3/(3*(1 - x^2)^5*(1 - x*y*z)*(1 - x^2*y)*(1 - y^4)^3)
 sage: F.denominator_signature()
-{'monomial': 3,
+{'coefficient': 3,
+ 'monomial': (1, 3, 0),
  'factors': {(2, 0, 0): 5, (0, 4, 0): 3, (1, 1, 1): 1, (2, 1, 0): 1}}
 ```
+
+&ensp;
 
 ## .factor 
 
 Returns a new `brat` object with the numerator polynomial factored.
 
+&ensp;
+
 ## .increasing_order
 
 This is set to `True` by default&mdash;unless it was set to `False` upon construction. This can be toggled to either `True` or `False`. It will affect the print out and the `.latex` method. 
 
-This is an *attribute* and not a method like the rest of the functions on this page. This means it is called without parentheses 
+This method is not callable like the rest of the functions on this page. This means it is called without parentheses 
 
 ### Example
 
@@ -119,16 +153,17 @@ We construct the following polynomial and then switch the display order:
 sage: t = polygens(QQ, 't')[0]
 sage: h = br.brat(t^3 - 6*t^2 + 11*t - 6)
 sage: h
--6 + 11*t - 6*t^2 + t^3
+-(6 - 11*t + 6*t^2 - t^3)
 sage: h.increasing_order = False
 sage: h
 t^3 - 6*t^2 + 11*t - 6
 ```
 
+&ensp;
 
 ## .invert_variables
 
-Returns the corresponding `brat` after inverting all of the variables and then rewriting the rational function so that all exponents are non-negative. 
+Returns the corresponding `brat` after inverting all of the variables.
 
 Keyword argument:
 
@@ -136,7 +171,7 @@ Keyword argument:
 
 ### Example 1
 
-We will verify that, after inverting the variables of 
+We verify that, after inverting the variables of 
 \[ 
 	E = \dfrac{1 + 26T + 66T^2 + 26T^3 + T^4}{(1 - T)^5},
 \]
@@ -146,12 +181,12 @@ we obtain a $T$-multiple of it.
 sage: T = var('T')
 sage: E = br.brat(
 	numerator=1 + 26*T + 66*T^2 + 26*T^3 + T^4,
-	denominator_signature={(1,): 5}
+	denominator_signature={"coefficient": 1, "monomial": (0,), "factors": {(1,): 5}}
 )
 sage: E
 (1 + 26*T + 66*T^2 + 26*T^3 + T^4)/(1 - T)^5
 sage: E.invert_variables()
-(-T - 26*T^2 - 66*T^3 - 26*T^4 - T^5)/(1 - T)^5
+-(T + 26*T^2 + 66*T^3 + 26*T^4 + T^5)/(1 - T)^5
 ```
 
 Now we can show it more clearly.
@@ -166,24 +201,7 @@ sage: E.invert_variables(ratio=True)
 -T
 ```
 
-### Example 2
-
-We show that, after inverting the variables of 
-\[ 
-	P = 1 + 2x + x^2
-\]
-we do not get a rational function that satisfies the [main assumption](brat.md#brat) of a `brat`. Hence the output is not a `brat`.
-
-```python
-sage: x = var('x')
-sage: P = br.brat(1 + 2*x + x^2)
-sage: P
-1 + 2*x + x^2
-sage: P.invert_variables()
-(x^2 + 2*x + 1)/x^2
-sage: isinstance(P.invert_variables(), br.brat)
-False
-```
+&ensp;
 
 ## .latex 
 
@@ -220,6 +238,8 @@ sage: F.latex(split=True)
  '(1 - t)(1 - t^2)(1 - t^3)(1 - t^4)(1 - t^5)')
 ```
 
+&ensp;
+
 ## .numerator
 
 Returns the polynomial in the numerator of the rational function as a `brat`.
@@ -242,6 +262,8 @@ sage: f
 sage: f.numerator()
 1 + x*y^2
 ```
+
+&ensp;
 
 ## .rational_function
 
@@ -268,6 +290,8 @@ sage: f.rational_function()
 1/(-x*y^2 + 1)
 ```
 
+&ensp;
+
 ## .subs
 
 Given a dictionary of the desired substitutions, return the new `brat` obtained by performing the substitutions. 
@@ -285,7 +309,7 @@ We apply some substitutions to the following rational function:
 sage: Y, T = polygens(QQ, 'Y,T')
 sage: C = br.brat(
 	numerator=1 + 3*Y + 2*Y^2 + (2 + 3*Y + Y^2)*T,
-	denominator_signature={(0,1): 2}
+	denominator=(1 - T)^2
 )
 sage: C
 (1 + 2*T + 3*Y + 3*Y*T + 2*Y^2 + Y^2*T)/(1 - T)^2
@@ -297,11 +321,13 @@ sage: C.subs({Y: 0})
 (1 + 2*T)/(1 - T)^2
 ```
 
-Note that some substitutions yield rational functions that do not satisfy the [main assumption](brat.md#brat), so the output will not be a `brat`.
+Note that some substitutions may yield rational functions that do not satisfy the [main assumption](brat.md#brat), so the output will not be a `brat`.
 ```python
 sage: C.subs({T: T - 1})
 (Y^2*T + Y^2 + 3*Y*T + 2*T - 1)/(T^2 - 4*T + 4)
 ```
+
+&ensp;
 
 ## .variables
 
@@ -331,6 +357,8 @@ sage: type(varbs[0])
 <class 'sage.rings.polynomial.multi_polynomial_libsingular.MPolynomial_libsingular'>
 ```
 
+&ensp;
+
 ## .write_latex
 
 Writes the `brat` object to a file formatted in $\LaTeX$. The (default) output is a displayed equation (using `\[` and `\]`) of the `brat`. There are many parameters to change the format of the output.
@@ -346,7 +374,7 @@ Writes the `brat` object to a file formatted in $\LaTeX$. The (default) output i
 - `function_name`: turns the expression to an equation by displaying the function name. Default: `None`.
 - `save_message`: turns on the save message at the end. Default: `True`.
 
-#### Examples
+### Examples
 
 We will write the following function to `test.tex` with all the other parameters set to their defaults:
 \[ 

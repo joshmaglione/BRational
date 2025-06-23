@@ -1,30 +1,50 @@
 # BRational
 
-Author: [Joshua Maglione](https://www.joshmaglione/com).
+&emsp;
 
-Documentation for the [BRational](https://github.com/joshmaglione/brational) package for [SageMath](https://www.sagemath.org/).
+The goal of **BRational** is to format certain rational functions in SageMath to enable users to think entirely about their own work and interests and not about formatting.
 
-## Purpose
+&ensp;
 
-The goal of **BRational** is to format certain rational functions in SageMath in a particular format. These rational functions contain the class of generating series, which is our primary use case. The main purpose is to enable users to manipulate such expressions and to rewrite expressions for ease of comprehension. 
+## Install
 
-## Setup
+The simplest way to install BRational is to run the following 
 
-The simplest way to **install** BRational is to run the following 
+- in a terminal:
 
 ```sh
 $ sage --pip install brational
 ```
 
+- or in SageMath:
+
+```python
+sage: %pip install brational
+```
+
 Alternatively, one can download the [latest release](https://github.com/joshmaglione/brational/releases/latest) and unzip it into a directory that SageMath can find for importing.
 
-To **update** an older version of BRational to the latest version, run the following 
+&ensp;
+
+## Update
+
+To update an older version of BRational to the latest version, run the following 
+
+- in a terminal: 
 
 ```sh 
 $ sage --pip install brational --upgrade 
 ```
 
+- or in SageMath:
+
+```python
+sage: %pip install brational --upgrade 
+```
+
 BRational has no external dependencies and is compatible with SageMath 9.6 and later. It may work just fine with earlier versions of SageMath, but these have not been tested.
+
+&ensp;
 
 ## Importing
 
@@ -35,3 +55,23 @@ import brational as br
 ```
 
 Throughout this documentation, we use `br` for the reference name of `brational`.
+
+&ensp;
+
+## Citing 
+
+If you have used BRational and would like to cite us, please adapt the following to your style.
+
+- Joshua Maglione, *BRational: Beautiful formatting of rational functions*, version 2.0, 2025, https://github.com/joshmaglione/BRational.
+
+BibTeX format:
+
+```bibtex
+@software{BRational,
+  author       = {Joshua Maglione},
+  title        = {BRational: Beautiful formatting of rational functions},
+  version      = {2.0},
+  url          = {https://github.com/joshmaglione/BRational},
+  year         = {2025},
+}
+```

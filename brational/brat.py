@@ -148,7 +148,7 @@ def get_signature(R, N, D):
 	while len(D_factors) > 0:
 		f, e = D_factors.pop(0)
 		m_f = f.monomials() 	## Need to ignore constants??
-		if len(m_f) == 2 and prod(f.coefficients()) < 0:
+		if len(m_f) == 2 and prod(f.coefficients()) < 0 and R(1) in m_f and f.monomial_coefficient(R(1)) in [-1, 1]:
 			my_print(DEBUG, f"Polynomial: {f} -- is GP", 1)
 			# We make sure that if there are negative values, the first non-zero
 			# value is negative. We will always have a positive.
@@ -232,7 +232,7 @@ def get_signature(R, N, D):
 		my_print(DEBUG, f"Expected:\n\t{N/D}")
 		my_print(DEBUG, f"Numerator:\n\t{N_form}")
 		my_print(DEBUG, f"Denominator:\n\t{D_form}")
-		raise RuntimeError("Unexpected behavior. Contact Josh.")
+		raise ValueError("Rational function does not satisfy main assumption.")
 	my_print(DEBUG, f"const: {const}", 1)
 	const_unit, const_mono_factors = split_integer_factor(const.factor())
 	const_mono = R(prod(f**e for f, e in const_mono_factors))
@@ -847,35 +847,23 @@ class brat:
 			sage: H
 			(1 - 2*x + 2*x^2 - x^3 + x^4 - x^5 + x^7 - x^8 + x^9 - 2*x^10 + 2*x^11 - x^12)/((1 - x)^3*(1 - x^3)^2*(1 - x^4)
 			*(1 - x^5))
-			sage: H.fix_denominator(
+			sage: H.change_denominator(
 				signature={(1,): 1, (2,): 1, (3,): 2, (4,): 1, (5,): 1}
 			)
 			(1 + x^3 + x^4 + x^5 + x^7 + x^8 + x^9 + x^12)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
 		"""
-		if expression:
-			if expression == 0:
-				raise ValueError("Expression cannot be zero.")
-			D_new = brat(1/expression)
-			return self.fix_denominator(signature=D_new.denominator_signature())
-		if signature is None:
-			raise ValueError("Must provide an expression or signature.")
-		if not isinstance(signature, dict):
-			raise TypeError("Signature must be a dictionary.")
-		if "coefficient" not in signature.keys():
-			raise ValueError("Signature must contain key 'coefficient'.")
-		if "monomial" not in signature.keys():
-			raise ValueError("Signature must contain key 'monomial'.")
-		if "factors" not in signature.keys():
-			raise ValueError("Signature must contain key 'factors'.")
-		expr = unfold_signature(self._ring, signature)
-		new_numer = self._ring(self._n_poly*expr/self.denominator())
-		if new_numer.denominator() not in ZZ:
-			raise ValueError("New denominator must be a multiple of the old one.")
+		rat = self.rational_function()
+		if signature:
+			d = unfold_signature(self._ring, signature)
+			new_num = rat*d.numerator()*d.denominator()
+			return brat(
+				numerator=new_num.numerator(),
+				denominator=d.numerator()
+			)
+		new_num = rat*expression
 		return brat(
-			numerator=new_numer, 
-			denominator_signature=signature,
-			fix_denominator=True,
-			increasing_order=self.increasing_order
+			numerator=new_num.numerator(),
+			denominator=expression
 		)
 
 	def denominator(self):
