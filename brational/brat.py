@@ -991,7 +991,7 @@ class brat:
 		latex_str = remove_unnecessary_braces_and_spaces(brat_to_str(B, True))
 		if split:
 			N, D = latex_str.split('@')
-			N = N[8:-1]
+			N = N[7:-1]
 			D = D[1:-1]
 			return (N, D)
 		return latex_str.replace('@', '')
