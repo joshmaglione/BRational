@@ -519,7 +519,7 @@ def format_factored_numerator(
 	return n_str
 
 # Given data, return the formatted denominator as a string.
-def format_denominator(R, sig:dict, latex:bool) -> str:
+def format_denominator(R, sig:dict, latex:bool, hidden_mono:bool) -> str:
 	from .util import at_least_two
 	def wrap(v:tuple[int]):
 		mono = prod(x**e for x, e in zip(R.gens(), v) if e > 0)
@@ -549,6 +549,12 @@ def format_denominator(R, sig:dict, latex:bool) -> str:
 			d_str += "*"
 	
 	if latex:
+		if hidden_mono:
+			if len(sig["factors"]) == 1 and list(sig["factors"].values())[0] == 1 and sig["coefficient"] == 1:
+				d_str = d_str[1:-1]
+		else:
+			if len(sig["factors"]) == 1 and list(sig["factors"].values())[0] == 1 and sig["coefficient"] == 1 and list(sig["monomial"]) == [0]*len(sig["monomial"]):
+				d_str = d_str[1:-1]
 		return d_str
 	if len(gp_list) > 1 or len(mono_factor.factor()) > 1 or at_least_two(
 		sig["coefficient"] != 1, 
@@ -651,7 +657,7 @@ def brat_to_str(B, latex=False) -> str:
 			latex,
 		)
 		sig = B._d_sig
-	D = format_denominator(B._ring, sig, latex)
+	D = format_denominator(B._ring, sig, latex, B.hide_monomial)
 	return quo(N, D)
 
 # The main class of BRational.
@@ -824,7 +830,7 @@ class brat:
 	def __ne__(self, other):
 		return not self == other
 	
-	def change_denominator(self, expression=None, signature=None):
+	def change_denominator(self, expression=None, signature:dict=None):
 		r"""Given a polynomial, or data equivalent to a polynomial, returns a new ``brat``, equal to the original, whose denominator is the given polynomial.
 
 		- ``expression``: the polynomial expression. Default: ``None``.
@@ -921,7 +927,7 @@ class brat:
 		B._factor = True
 		return B
 
-	def invert_variables(self, ratio=False):
+	def invert_variables(self, ratio:bool=False):
 		r"""Returns the corresponding ``brat`` after inverting all of the variables and then rewriting the rational function so that all exponents are non-negative. 
 
 		- ``ratio'': returns the ratio of the original brat divided by the brat with inverted variables. Default: ``False''.
@@ -961,7 +967,7 @@ class brat:
 			new_sig["monomial"] = tuple(N.denominator().degrees())
 		return brat(numerator=N.numerator(), denominator_signature=new_sig)
 
-	def latex(self, factor=False, split=False):
+	def latex(self, factor:bool=False, split:bool=False):
 		r"""Returns a string that formats the ``brat` `in LaTeX in the ``\dfrac{...}{...}`` format.
 
 		Additional argument:
@@ -1092,15 +1098,15 @@ class brat:
 	
 	def write_latex(
 			self,
-			filename=None,
-			just_numerator=False,
-			just_denominator=False,
-			align=False,
-			factor=False,
-			line_width=100,
-			function_name=None,
-			save_message=True
-		):
+			filename:str=None,
+			just_numerator:bool=False,
+			just_denominator:bool=False,
+			align:bool=False,
+			factor:bool=False,
+			line_width:int=100,
+			function_name:str=None,
+			save_message:bool=True
+		) -> None:
 		r"""Writes the ``brat`` object to a file formatted in LaTeX. The (default) output is a displayed equation (using ``\[`` and ``\]``) of the ``brat``. There are many parameters to change the format of the output.
 
 		- ``filename``: the string for the output filename. Default: ``None``, which will output a timestamp name of the form ``%Y-%m-%d_%H-%M-%S.tex``.

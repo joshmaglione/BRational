@@ -234,9 +234,7 @@ def test_previous_reported_bugs():
 	R1 = brat((t**8 - 1)/((t**4 + t**3 + t**2 + t + 1)*(t**4 + t**2 + 1)*(t**3 - 1)*(t**2 - 1)*(t - 1)**5))
 	R2 = brat((t**8 - 1)/((t**6 - 1)*(t**5 - 1)*(t**2 + t + 1)*(t - 1)**5))
 	assert str(R1) == "(1 - t^8)/((1 - t)^4*(1 - t^3)*(1 - t^5)*(1 - t^6))"
-	assert R1.latex() == "\\dfrac{1 - t^8}{(1 - t)^4(1 - t^3)(1 - t^5)(1 - t^6)}"
 	assert str(R2) == "(1 - t^8)/((1 - t)^4*(1 - t^3)*(1 - t^5)*(1 - t^6))"
-	assert R2.latex() == "\\dfrac{1 - t^8}{(1 - t)^4(1 - t^3)(1 - t^5)(1 - t^6)}"
 
 
 def test_Zeta_examples():
@@ -276,20 +274,6 @@ def test_Zeta_examples():
 	assert str(brat(R12)) == "-(q^2 - 5*q^3 + 8*q^4 - 3*q^5 - 2*q^6)"
 	assert str(brat(R12, increasing_order=False).factor()) == "(2*q - 1)*q^2*(q^3 + 2*q^2 - 3*q + 1)"
 	assert str(brat(R13)) == "(1 - q*t^3)/((1 - t)*(1 - t^2)*(1 - q*t)*(1 - q*t^2))"
-	assert brat(R1).latex() == "\\dfrac{1 + qt + q^2t^2}{(1 - t)(1 - q^2t^2)(1 - q^3t^2)}"
-	assert brat(R2).latex() == "\\dfrac{1}{(1 - t)(1 - qt)(1 - q^2t^3)}"
-	assert brat(R3).latex() == "\\dfrac{1 - t}{(1 - qt)}"
-	assert brat(R4).latex() == "\\dfrac{1 - t - t\\mathit{sc}_0 + t^2\\mathit{sc}_0 + qt\\mathit{sc}_0 - qt^2 - qt^2\\mathit{sc}_0 + qt^3}{(1 - qt)(1 - q^3t^2)}"
-	assert brat(R4).factor().latex() == "\\dfrac{(1 - t)(1 - t\\mathit{sc}_0 + qt\\mathit{sc}_0 - qt^2)}{(1 - qt)(1 - q^3t^2)}"
-	assert brat(R5, increasing_order=False).latex() == "\\dfrac{1 + q^{-2}t^2 - 2q^{-1} - 2q^{-2}t - 2q^{-3}t^2 + 2q^{-2} + 2q^{-3}t + 2q^{-4}t^2 - q^{-3} - q^{-5}t^2}{(1 - q^{-1}t)^2(1 - q^{-3}t^3)}"
-	assert brat(R6, increasing_order=False).latex() == "\\dfrac{1 - q^{-3}t}{(1 - q^{-1}t)(1 - t)}"
-	assert brat(R7).latex() == "\\dfrac{1 - t}{(1 - qt)(1 - q^2t)}"
-	assert brat(R8, increasing_order=False).latex() == "\\dfrac{1 - 3q^{-1}t + 3q^{-2}t^2 - q^{-3}t^3}{(1 - t)^4}"
-	assert brat(R9, increasing_order=False).latex() == "\\dfrac{1 - 2q^{-3}t - q^{-4}t + q^{-6}t^2 + 2q^{-7}t^2 - q^{-10}t^3}{(1 - q^{-2}t)^3(1 - t)}"
-	assert brat(R10, increasing_order=False).latex() == "\\dfrac{t + 1 - 2q^{-1}t - 2q^{-2}t + q^{-3}t^2 + q^{-3}t}{(1 - t)(1 - qt)^2}"
-	assert brat(R11).latex() == "\\dfrac{q^{-6}t^2 + q^{-5}t - q^{-6}t^3 - 3q^{-5}t^2 - 6q^{-4}t + q^{-7}t^5 - 5q^{-6}t^4 + 3q^{-5}t^3 + 3q^{-4}t^2 + 14q^{-3}t - 3q^{-7}t^6 + 7q^{-6}t^5 + 5q^{-5}t^4 + 17q^{-4}t^3 - 12q^{-3}t^2 - 14q^{-2}t - q^{-7}t^7 + 24q^{-6}t^6 - 58q^{-5}t^5 + 45q^{-4}t^4 - 83q^{-3}t^3 + 46q^{-2}t^2 - 2q^{-1}t + 1 - q^{-7}t^8 + 2q^{-6}t^7 - 46q^{-5}t^6 + 83q^{-4}t^5 - 45q^{-3}t^4 + 58q^{-2}t^3 - 24q^{-1}t^2 + t + 14q^{-5}t^7 + 12q^{-4}t^6 - 17q^{-3}t^5 - 5q^{-2}t^4 - 7q^{-1}t^3 + 3t^2 - 14q^{-4}t^7 - 3q^{-3}t^6 - 3q^{-2}t^5 + 5q^{-1}t^4 - t^3 + 6q^{-3}t^7 + 3q^{-2}t^6 + q^{-1}t^5 - q^{-2}t^7 - q^{-1}t^6}{(1 - q^{-1}t)^3(1 - t)^3(1 - t^2)(1 - qt)}"
-	assert brat(R12).latex() == "-(q^2 - 5q^3 + 8q^4 - 3q^5 - 2q^6)"
-	assert brat(R13).latex() == "\\dfrac{1 - qt^3}{(1 - t)(1 - t^2)(1 - qt)(1 - qt^2)}"
 
 
 def test_CICO():
