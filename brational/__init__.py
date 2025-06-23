@@ -6,4 +6,4 @@
 
 from .brat import brat
 
-__version__ = '2.0.0'
+__version__ = '2.0'

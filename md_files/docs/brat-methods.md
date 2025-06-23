@@ -2,6 +2,39 @@
 
 We describe all of the methods associated with the class `brat` together with an example. 
 
+## .change_denominator
+
+Given a polynomial&mdash;or data equivalent to a polynomial (see arguments)&mdash;returns a new `brat`, equal to the original, whose denominator is the given polynomial.
+
+(Ordered) keyword arguments:
+
+- `expression`: the polynomial expression. Default: `None`.
+- `signature`: the signature for the polynomial expression. See [denominator signature](#denominator_signature) method. Default: `None`.
+
+### Example 
+
+We construct the following rational function:
+\[ 
+	H = \dfrac{(1 + x^3)(1 + x^4)(1 + x^5)}{(1 - x)(1 - x^2)(1 - x^3)^2(1 - x^4)(1 - x^5)}
+\]
+from a simplified expression. Then we recover this particular expression using `fix_denominator`.
+
+```python
+sage: x = polygens(QQ, 'x')[0]
+sage: h = (1 + x^3)*(1 + x^4)*(1 + x^5)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
+sage: h
+(x^10 - 2*x^9 + 3*x^8 - 3*x^7 + 4*x^6 - 4*x^5 + 4*x^4 - 3*x^3 + 3*x^2 - 2*x + 1)/(x^16 - 3*x^15 + 4*x^14 - 6*x^
+13 + 9*x^12 - 10*x^11 + 12*x^10 - 13*x^9 + 12*x^8 - 13*x^7 + 12*x^6 - 10*x^5 + 9*x^4 - 6*x^3 + 4*x^2 - 3*x + 1)
+sage: H = br.brat(h)
+sage: H
+(1 - 2*x + 2*x^2 - x^3 + x^4 - x^5 + x^7 - x^8 + x^9 - 2*x^10 + 2*x^11 - x^12)/((1 - x)^3*(1 - x^3)^2*(1 - x^4)
+*(1 - x^5))
+sage: H.change_denominator(
+	signature={(1,): 1, (2,): 1, (3,): 2, (4,): 1, (5,): 1}
+)
+(1 + x^3 + x^4 + x^5 + x^7 + x^8 + x^9 + x^12)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
+```
+
 ## .denominator
 
 Returns the polynomial in the denominator of the rational function. This is not necessarily reduced.
@@ -68,39 +101,6 @@ sage: F.denominator_signature()
 ## .factor 
 
 Returns a new `brat` object with the numerator polynomial factored.
-
-## .fix_denominator
-
-Given a polynomial&mdash;or data equivalent to a polynomial (see arguments)&mdash;returns a new `brat`, equal to the original, whose denominator is the given polynomial.
-
-(Ordered) keyword arguments:
-
-- `expression`: the polynomial expression. Default: `None`.
-- `signature`: the signature for the polynomial expression. See [denominator signature](#denominator_signature) method. Default: `None`.
-
-### Example 
-
-We construct the following rational function:
-\[ 
-	H = \dfrac{(1 + x^3)(1 + x^4)(1 + x^5)}{(1 - x)(1 - x^2)(1 - x^3)^2(1 - x^4)(1 - x^5)}
-\]
-from a simplified expression. Then we recover this particular expression using `fix_denominator`.
-
-```python
-sage: x = polygens(QQ, 'x')[0]
-sage: h = (1 + x^3)*(1 + x^4)*(1 + x^5)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
-sage: h
-(x^10 - 2*x^9 + 3*x^8 - 3*x^7 + 4*x^6 - 4*x^5 + 4*x^4 - 3*x^3 + 3*x^2 - 2*x + 1)/(x^16 - 3*x^15 + 4*x^14 - 6*x^
-13 + 9*x^12 - 10*x^11 + 12*x^10 - 13*x^9 + 12*x^8 - 13*x^7 + 12*x^6 - 10*x^5 + 9*x^4 - 6*x^3 + 4*x^2 - 3*x + 1)
-sage: H = br.brat(h)
-sage: H
-(1 - 2*x + 2*x^2 - x^3 + x^4 - x^5 + x^7 - x^8 + x^9 - 2*x^10 + 2*x^11 - x^12)/((1 - x)^3*(1 - x^3)^2*(1 - x^4)
-*(1 - x^5))
-sage: H.fix_denominator(
-	signature={(1,): 1, (2,): 1, (3,): 2, (4,): 1, (5,): 1}
-)
-(1 + x^3 + x^4 + x^5 + x^7 + x^8 + x^9 + x^12)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
-```
 
 ## .increasing_order
 

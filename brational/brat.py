@@ -439,8 +439,11 @@ def format_numerator(
 				n_str += " - " + stringify(
 					P, -flip*numer.monomial_coefficient(m), m, neg, latex
 				)
-	if unit != 1:	# unit is only 1 or -1
-		n_str = f"-({n_str})"
+	if unit != 1: 		# unit is only 1 or -1
+		if ' + ' in n_str or ' - ' in n_str:
+			n_str = f"-({n_str})"
+		else:
+			n_str = f"-{n_str}"
 	return n_str
 
 # Given data, format the numerator. Returns the formatted and factored numerator
@@ -821,6 +824,54 @@ class brat:
 	def __ne__(self, other):
 		return not self == other
 	
+	def change_denominator(self, expression=None, signature=None):
+		r"""Given a polynomial, or data equivalent to a polynomial, returns a new ``brat``, equal to the original, whose denominator is the given polynomial.
+
+		- ``expression``: the polynomial expression. Default: ``None``.
+		- ``signature``: the signature for the polynomial expression. See the denominator signature method. Default: ``None``.
+
+		EXAMPLE::
+
+			sage: x = polygens(QQ, 'x')[0]
+			sage: h = (1 + x^3)*(1 + x^4)*(1 + x^5)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
+			sage: h
+			(x^10 - 2*x^9 + 3*x^8 - 3*x^7 + 4*x^6 - 4*x^5 + 4*x^4 - 3*x^3 + 3*x^2 - 2*x + 1)/(x^16 - 3*x^15 + 4*x^14 - 6*x^
+			13 + 9*x^12 - 10*x^11 + 12*x^10 - 13*x^9 + 12*x^8 - 13*x^7 + 12*x^6 - 10*x^5 + 9*x^4 - 6*x^3 + 4*x^2 - 3*x + 1)
+			sage: H = br.brat(h)
+			sage: H
+			(1 - 2*x + 2*x^2 - x^3 + x^4 - x^5 + x^7 - x^8 + x^9 - 2*x^10 + 2*x^11 - x^12)/((1 - x)^3*(1 - x^3)^2*(1 - x^4)
+			*(1 - x^5))
+			sage: H.fix_denominator(
+				signature={(1,): 1, (2,): 1, (3,): 2, (4,): 1, (5,): 1}
+			)
+			(1 + x^3 + x^4 + x^5 + x^7 + x^8 + x^9 + x^12)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
+		"""
+		if expression:
+			if expression == 0:
+				raise ValueError("Expression cannot be zero.")
+			D_new = brat(1/expression)
+			return self.fix_denominator(signature=D_new.denominator_signature())
+		if signature is None:
+			raise ValueError("Must provide an expression or signature.")
+		if not isinstance(signature, dict):
+			raise TypeError("Signature must be a dictionary.")
+		if "coefficient" not in signature.keys():
+			raise ValueError("Signature must contain key 'coefficient'.")
+		if "monomial" not in signature.keys():
+			raise ValueError("Signature must contain key 'monomial'.")
+		if "factors" not in signature.keys():
+			raise ValueError("Signature must contain key 'factors'.")
+		expr = unfold_signature(self._ring, signature)
+		new_numer = self._ring(self._n_poly*expr/self.denominator())
+		if new_numer.denominator() not in ZZ:
+			raise ValueError("New denominator must be a multiple of the old one.")
+		return brat(
+			numerator=new_numer, 
+			denominator_signature=signature,
+			fix_denominator=True,
+			increasing_order=self.increasing_order
+		)
+
 	def denominator(self):
 		r"""Returns the polynomial in the denominator of the rational function.
 
@@ -870,54 +921,6 @@ class brat:
 		B._factor = True
 		return B
 
-	def fix_denominator(self, expression=None, signature=None):
-		r"""Given a polynomial, or data equivalent to a polynomial, returns a new ``brat``, equal to the original, whose denominator is the given polynomial.
-
-		- ``expression``: the polynomial expression. Default: ``None``.
-		- ``signature``: the signature for the polynomial expression. See the denominator signature method. Default: ``None``.
-
-		EXAMPLE::
-
-			sage: x = polygens(QQ, 'x')[0]
-			sage: h = (1 + x^3)*(1 + x^4)*(1 + x^5)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
-			sage: h
-			(x^10 - 2*x^9 + 3*x^8 - 3*x^7 + 4*x^6 - 4*x^5 + 4*x^4 - 3*x^3 + 3*x^2 - 2*x + 1)/(x^16 - 3*x^15 + 4*x^14 - 6*x^
-			13 + 9*x^12 - 10*x^11 + 12*x^10 - 13*x^9 + 12*x^8 - 13*x^7 + 12*x^6 - 10*x^5 + 9*x^4 - 6*x^3 + 4*x^2 - 3*x + 1)
-			sage: H = br.brat(h)
-			sage: H
-			(1 - 2*x + 2*x^2 - x^3 + x^4 - x^5 + x^7 - x^8 + x^9 - 2*x^10 + 2*x^11 - x^12)/((1 - x)^3*(1 - x^3)^2*(1 - x^4)
-			*(1 - x^5))
-			sage: H.fix_denominator(
-				signature={(1,): 1, (2,): 1, (3,): 2, (4,): 1, (5,): 1}
-			)
-			(1 + x^3 + x^4 + x^5 + x^7 + x^8 + x^9 + x^12)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
-		"""
-		if expression:
-			if expression == 0:
-				raise ValueError("Expression cannot be zero.")
-			D_new = brat(1/expression)
-			return self.fix_denominator(signature=D_new.denominator_signature())
-		if signature is None:
-			raise ValueError("Must provide an expression or signature.")
-		if not isinstance(signature, dict):
-			raise TypeError("Signature must be a dictionary.")
-		if "coefficient" not in signature.keys():
-			raise ValueError("Signature must contain key 'coefficient'.")
-		if "monomial" not in signature.keys():
-			raise ValueError("Signature must contain key 'monomial'.")
-		if "factors" not in signature.keys():
-			raise ValueError("Signature must contain key 'factors'.")
-		expr = unfold_signature(self._ring, signature)
-		new_numer = self._ring(self._n_poly*expr/self.denominator())
-		if new_numer.denominator() not in ZZ:
-			raise ValueError("New denominator must be a multiple of the old one.")
-		return brat(
-			numerator=new_numer, 
-			denominator_signature=signature,
-			fix_denominator=True,
-			increasing_order=self.increasing_order
-		)
-
 	def invert_variables(self, ratio=False):
 		r"""Returns the corresponding ``brat`` after inverting all of the variables and then rewriting the rational function so that all exponents are non-negative. 
 
@@ -938,18 +941,25 @@ class brat:
 		if ratio:
 			return brat(self.invert_variables()/self)
 		varbs = self._ring.gens()
-		mon = lambda v: self._ring(prod(x**e for x, e in zip(varbs, v)))
+		mon = lambda v: prod(x**e for x, e in zip(varbs, v))
 		factor = prod(
 			mon(v)**e*(-1)**e for v, e in self._d_sig["factors"].items()
 		)
-		N = self._n_poly.subs({x: x**-1 for x in varbs})*factor
+		N = self._n_poly.subs({x: x**-1 for x in varbs})*factor*mon(
+			self._d_sig["monomial"]
+		)
 		if N.denominator() in ZZ:
 			return brat(
 				numerator=self._ring(N), 
 				denominator_signature=self._d_sig, 
 				increasing_order=self.increasing_order
 			)
-		return N/self.denominator()
+		new_sig = deep_sig_copy(self._d_sig)
+		if len(self._ring.gens()) == 1:
+			new_sig["monomial"] = tuple([N.denominator().degree()])
+		else:
+			new_sig["monomial"] = tuple(N.denominator().degrees())
+		return brat(numerator=N.numerator(), denominator_signature=new_sig)
 
 	def latex(self, factor=False, split=False):
 		r"""Returns a string that formats the ``brat` `in LaTeX in the ``\dfrac{...}{...}`` format.
