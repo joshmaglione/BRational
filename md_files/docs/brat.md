@@ -2,7 +2,7 @@
 
 &emsp;
 
-The class we use to format rational functions is `brat`, and the kinds of rational functions accepted can be expressed as 
+The class we use to format rational functions is `brat`, and the kinds of rational functions accepted satisfy the **main assumption**: they can be expressed as 
 \[ 
 	\dfrac{F(\bm{X})}{c\bm{X}^{\beta} \prod_{i=1}^m(1 - \bm{X}^{\alpha_i})}, 
 \] 

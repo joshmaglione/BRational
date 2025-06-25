@@ -232,7 +232,7 @@ def get_signature(R, N, D):
 		my_print(DEBUG, f"Expected:\n\t{N/D}")
 		my_print(DEBUG, f"Numerator:\n\t{N_form}")
 		my_print(DEBUG, f"Denominator:\n\t{D_form}")
-		raise ValueError("Rational function does not satisfy main assumption.")
+		raise ValueError("Rational function does not satisfy main assumption. For details see:\n\thttps://joshmaglione.com/BRational/brat/")
 	my_print(DEBUG, f"const: {const}", 1)
 	const_unit, const_mono_factors = split_integer_factor(const.factor())
 	const_mono = R(prod(f**e for f, e in const_mono_factors))
