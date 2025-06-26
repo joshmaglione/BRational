@@ -1100,7 +1100,7 @@ class brat:
 		- ``filename``: the string for the output filename. Default: ``None``, which will output a timestamp name of the form ``%Y-%m-%d_%H-%M-%S.tex``.
 		- ``just_numerator``: write just the numerator. Default: ``False``.
 		- ``just_denominator``: write just the denominator. Default: ``False``.
-		- ``align``: format using the ``align*`` environment. This is especially useful for long polynomials. Default: ``False``.
+		- ``align``: format using the ``align*`` environment. Default: ``False``.
 		- ``factor``: factor the numerator polynomial. Default: ``False``.
 		- ``line_width``: determines the line width in characters for each line of the ``align*`` environment. Only used when ``align`` is set to ``True``. Default: ``120``.
 		- ``function_name``: turns the expression to an equation by displaying the function name. Default: ``None``.
@@ -1154,7 +1154,6 @@ class brat:
 			func = self.latex(split=True, factor=factor)[1]
 		else:
 			func = self.latex(factor=factor)
-			align = False
 		if not function_name is None:
 			if align:
 				function_name = f"{function_name} &= "
@@ -1170,7 +1169,7 @@ class brat:
 		with open(filename, "w") as f:
 			f.write(output)
 		if save_message:
-			print(f"File saved as {filename}.")
+			print(f"Output saved to {filename}.")
 		return None
 	
 def deep_sig_copy(sig:dict) -> dict:
