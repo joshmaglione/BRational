@@ -1,6 +1,6 @@
-site_name: BRational Documentation
+site_name: BRational
 site_author: Joshua Maglione
-copyright: "&copy; 2024 J. Maglione"
+copyright: "&copy; 2024&ndash;2025 J. Maglione"
 nav:
     - Home: index.md
     - brat: brat.md

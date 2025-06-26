@@ -8,7 +8,7 @@
         <meta name="author" content="Joshua Maglione">
         
         <link rel="shortcut icon" href="../img/favicon.ico">
-        <title>brat - BRational Documentation</title>
+        <title>brat - BRational</title>
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
@@ -23,7 +23,7 @@
     <body>
         <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
             <div class="container">
-                <a class="navbar-brand" href="..">BRational Documentation</a>
+                <a class="navbar-brand" href="..">BRational</a>
                 <!-- Expander button -->
                 <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
                     <span class="navbar-toggler-icon"></span>
@@ -87,23 +87,36 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#example-1" class="nav-link">Example 1</a>
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-level="1"><a href="#examples" class="nav-link">Examples</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#introduction" class="nav-link">Introduction</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#example-2" class="nav-link">Example 2</a>
+            <li class="nav-item" data-level="2"><a href="#prescribed-denominator-i" class="nav-link">Prescribed Denominator I</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#example-3" class="nav-link">Example 3</a>
+            <li class="nav-item" data-level="2"><a href="#prescribed-denominator-ii" class="nav-link">Prescribed denominator II</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#example-4" class="nav-link">Example 4</a>
+            <li class="nav-item" data-level="2"><a href="#denominator-signature" class="nav-link">Denominator Signature</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#example-pretty_print" class="nav-link">Example (pretty_print)</a>
+            <li class="nav-item" data-level="2"><a href="#negative-exponents-i" class="nav-link">Negative Exponents I</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#negative-exponents-ii" class="nav-link">Negative Exponents II</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#pretty-print-pretty_print" class="nav-link">Pretty Print (pretty_print)</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -115,53 +128,67 @@
                     <div class="col-md-9" role="main">
 
 <h1 id="brat">brat</h1>
-<p>The class we use to format rational functions is <code>brat</code>, and the kinds of rational functions accepted have the form
+<p>&emsp;</p>
+<p>The class we use to format rational functions is <code>brat</code>, and the kinds of rational functions accepted satisfy the <strong>main assumption</strong>: they can be expressed as 
 [ 
-    \dfrac{F(\bm{X})}{C\cdot \prod_{i=1}^m(1 - \bm{X}^{\alpha_i})}, 
+    \dfrac{F(\bm{X})}{c\bm{X}^{\beta} \prod_{i=1}^m(1 - \bm{X}^{\alpha_i})}, 
 ] </p>
 <p>where the following hold:</p>
 <ul>
 <li>$\bm{X}=(X_1, \dots, X_n)$ are variables,</li>
 <li>$F(\bm{X})\in \mathbb{Z}[\bm{X}]$,</li>
-<li>$C\in \mathbb{Z}$, </li>
+<li>$c\in \N$, </li>
+<li>$\beta\in\N_0^n$,</li>
 <li>$m\in\N_0$, </li>
-<li>$\alpha_i\in\N_0^n$, where $\bm{X}^{\alpha_i} = X_1^{\alpha_{i,1}}\cdots X_n^{\alpha_{i,n}}$.</li>
+<li>$\alpha_i\in\mathbb{Z}^n$, where $\bm{X}^{\alpha_i} = X_1^{\alpha_{i,1}}\cdots X_n^{\alpha_{i,n}}$.</li>
 </ul>
-<p>The rules are sometimes bent in fortunate circumstances, for example $C$ might be a monomial in $\mathbb{Z}[\bm{X}]$. The above assumption is the minimal <strong>main assumption</strong>.</p>
-<p>The (ordered) keyword arguments for <code>brat</code> are</p>
+<p>This includes all elements of $\mathbb{Q}[\bm{X}^{\pm 1}]$ for example.</p>
+<p>The keyword arguments for <code>brat</code> are</p>
 <ul>
 <li><code>rational_expression</code>: the rational function (default: <code>None</code>),</li>
 <li><code>numerator</code>: the numerator polynomial of the rational function (default: <code>None</code>),</li>
 <li><code>denominator</code>: the denominator polynomial of the rational function (default: <code>None</code>),</li>
 <li><code>denominator_signature</code>: the dictionary of data for the denominator (default: <code>None</code>),</li>
-<li><code>fix_denominator</code>: whether to keep the given denominator fixed (default: <code>True</code>),</li>
-<li><code>increasing_order</code>: whether to display polynomials in increasing degree (default: <code>True</code>).</li>
+<li><code>fix_denominator</code>: whether to keep the given denominator fixed---does not apply to coefficients (default: <code>True</code>),</li>
+<li><code>increasing_order</code>: whether to display polynomials in increasing degree (default: <code>True</code>),</li>
+<li><code>hide_monomial</code>: whether to absorb the monomial in the denominator into the numerator (default: <code>True</code>).</li>
 </ul>
-<p><em>Additional notes</em>. The <code>denominator_signature</code> must be a dictionary whose keys are tuples of non-negative integers and whose keys are non-negative integers. If given a <code>denominator_signature</code>, the <code>numerator</code> will be used to determine the accepted ordered variables. [We do this by looking to its parent ring if <code>numerator</code> is a polynomial, or at the variables present if a symbolic expression.] Examples of acceptable <code>denominator_signature</code> are given in <a href="#example-3">Example 3</a> and in the <a href="../brat-methods/#denominator_signature">denominator_signature</a> method.</p>
+<p><em>Additional notes</em>. The <code>denominator_signature</code> must be a dictionary whose keys are </p>
+<ul>
+<li><code>"coefficient"</code>: an integer,</li>
+<li><code>"monomial"</code>: a tuple of non-negative integers with length matching the number of variables,</li>
+<li><code>"factors"</code>: a dictionary whose keys are tuples of integers with values of non-negative integers.</li>
+</ul>
+<p>Examples of acceptable <code>denominator_signature</code> are given in <a href="#denominator-signature">Denominator Signature</a> and in the <a href="../brat-methods/#denominator_signature">denominator_signature</a> method.</p>
+<p>&ensp;</p>
 <h2 id="algebraic-operations-and-relations">Algebraic operations and relations</h2>
-<p>One can use the usual algebraic operations with <code>brat</code>: add, subtract, multiply, divide (i.e. 'true' divide), powers. The Boolean relations <code>==</code> and <code>!=</code> can also be used. When adding a <code>brat</code> with something else, we attempt to make another <code>brat</code> object. To "opt out", use the method <code>rational_function</code>. </p>
+<p>One can use the usual algebraic operations with <code>brat</code>: add, subtract, multiply, divide (i.e. 'true' divide), powers. The Boolean relations <code>==</code> and <code>!=</code> can also be used. When adding a <code>brat</code> with something else, we attempt to make another <code>brat</code> object. </p>
 <p><strong>Warning:</strong> we cannot do anything about algebraic operations where the first object is <em>not</em> a <code>brat</code> object. For example, if <code>F</code> is a <code>brat</code> but <code>G</code> is a polynomial in SageMath, then <code>G + F</code> may raise errors, while <code>F + G</code> will attempt to add the two objects&mdash;other errors may arise.</p>
 <hr />
-<h2 id="example-1">Example 1</h2>
-<p>We expression the rational function
+<h1 id="examples">Examples</h1>
+<p>We build many examples using the <code>brat</code> constructor.</p>
+<p>&ensp;</p>
+<h2 id="introduction">Introduction</h2>
+<p>We express the rational function
 [
-    f(x,y)=\dfrac{1 + xy + x^2y^2}{(1 - x)(1 - y)}.
+    f=\dfrac{1 + xy + x^2y^2}{(1 - x)(1 - y)}.
 ]
 First we write this in the usual way, using symbolic variables. </p>
 <pre><code class="language-python">sage: x, y = var('x y')
 sage: f = (1 + x*y + x^2*y^2)/((1 - x)*(1 - y))
 sage: f
-(x^2*y^2 + x*y + 1)/((x - 1)*(y - 1))
+(1 + x*y + x^2*y^2)/((1 - y)*(1 - x))
 </code></pre>
-<p>Now we build a <code>brat</code> from $f(x,y)$.</p>
+<p>Now we build a <code>brat</code> from $f$.</p>
 <pre><code class="language-python">sage: F = br.brat(f)
 sage: F
 (1 + x*y + x^2*y^2)/((1 - y)*(1 - x))
 </code></pre>
-<h2 id="example-2">Example 2</h2>
+<p>&ensp;</p>
+<h2 id="prescribed-denominator-i">Prescribed Denominator I</h2>
 <p>Now we write the rational function 
 [
-    g(t) = \dfrac{1 + 4t + 6t^2 + 4t^3 + t^4}{(1 - t)(1 - t^2)(1 - t^3)(1 - t^4)} . 
+    g = \dfrac{1 + 4t + 6t^2 + 4t^3 + t^4}{(1 - t)(1 - t^2)(1 - t^3)(1 - t^4)} . 
 ]</p>
 <pre><code class="language-python">sage: t = polygens(QQ, 't')[0]
 sage: g = (1 + 4*t + 6*t^2 + 4*t^3 + t^4)/((1 - t)*(1 - t^2)*(1 - t^3)*(1 - t^4))
@@ -189,44 +216,11 @@ sage: G
 )
 (1 + 2*t - 2*t^3 - t^4)/((1 - t)^3*(1 - t^3)*(1 - t^4))
 </code></pre>
-<h2 id="example-3">Example 3</h2>
-<p>We construct the following rational function using a signature:
-[
-    h = \dfrac{1}{(1 - X_1)(1 - X_2)^3(1 - X_1X_2X_3)^4(1 - X_1X_2X_3^2)}.
-]</p>
-<pre><code class="language-python">sage: R = PolynomialRing(QQ, 'X1,X2,X3')
-sage: H = br.brat(
-    numerator=R(1),
-    denominator_signature={
-        (1, 0, 0): 1, 
-        (0, 1, 0): 3,
-        (1, 1, 1): 4,
-        (1, 1, 2): 1
-    }
-)
-sage: H
-1/((1 - X1)*(1 - X2)^3*(1 - X1*X2*X3)^4*(1 - X1*X2*X3^2))
-</code></pre>
-<p>We can also make the monomial in the signature explicit (and different from $1$).</p>
-<pre><code class="language-python">sage: H = br.brat(
-    numerator=R(1),
-    denominator_signature={
-        &quot;monomial&quot;: 3,
-        &quot;factors&quot;: {
-            (1, 0, 0): 1, 
-            (0, 1, 0): 3,
-            (1, 1, 1): 4,
-            (1, 1, 2): 1
-        }
-    }
-)
-sage: H
-1/(3*(1 - X1)*(1 - X2)^3*(1 - X1*X2*X3)^4*(1 - X1*X2*X3^2))
-</code></pre>
-<h2 id="example-4">Example 4</h2>
+<p>&ensp;</p>
+<h2 id="prescribed-denominator-ii">Prescribed denominator II</h2>
 <p>We construct the following rational function a few different ways:
 [ 
-    P(T) = \dfrac{1 + 6T + 11T^2 + 6T^3}{(1 - T^4)}. 
+    P = \dfrac{1 + 6T + 11T^2 + 6T^3}{(1 - T^4)}. 
 ]</p>
 <pre><code class="language-python">sage: T = polygens(QQ, 'T')[0]
 sage: P = br.brat((1 + 6*T + 11*T^2 + 6*T^3)/(1 - T^4))
@@ -251,10 +245,72 @@ sage: P
 sage: P
 (6*T^3 + 11*T^2 + 6*T + 1)/(1 - T)^4
 </code></pre>
-<h2 id="example-pretty_print">Example (pretty_print)</h2>
+<p>&ensp;</p>
+<h2 id="denominator-signature">Denominator Signature</h2>
+<p>We construct the following rational function using a denominator signature:
+[
+    h = \dfrac{1}{8(1 - X_1)(1 - X_2)^3(1 - X_1X_2X_3)^4(1 - X_1X_2X_3^2)}.
+]</p>
+<pre><code class="language-python">sage: R = PolynomialRing(QQ, 'X1,X2,X3')
+sage: d_sig = {
+    &quot;coefficient&quot;: 8,
+    &quot;monomial&quot;: (0, 0, 0),
+    &quot;factors&quot;: {
+        (1, 0, 0): 1, 
+        (0, 1, 0): 3,
+        (1, 1, 1): 4,
+        (1, 1, 2): 1
+    }
+}
+sage: H = br.brat(numerator=R(1), denominator_signature=d_sig)
+sage: H
+1/((1 - X1)*(1 - X2)^3*(1 - X1*X2*X3)^4*(1 - X1*X2*X3^2))
+</code></pre>
+<p>&ensp;</p>
+<h2 id="negative-exponents-i">Negative Exponents I</h2>
+<p>We express the Igusa zeta function associated with the braid arrangement:
+[
+    Z_2 = \dfrac{1 - 3q^{-1} + 2q^{-2} + 2q^{-1}t - 3q^{-2}t + q^{-3}t}{(1 - q^{-1}t)(1 - q^{-2}t^3)} . 
+]</p>
+<p>See <a href="https://arxiv.org/abs/2103.03640">Maglione&ndash;Voll</a> for details.</p>
+<pre><code class="language-python">sage: q, t = var('q t')
+sage: Z2 = (1 - 3*q^-1 + 2*q^-2 + 2*q^-1*t - 3*q^-2*t + q^-3*t)/((1 - q^-1*t)*(1 - q^-2*t^3))
+sage: Z2
+(2*t/q - 3/q - 3*t/q^2 + 2/q^2 + t/q^3 + 1)/((t^3/q^2 - 1)*(t/q - 1))
+sage: br.brat(Z2)
+(q^-3*t + 2*q^-2 - 3*q^-2*t - 3*q^-1 + 2*q^-1*t + 1)/((1 - q^-1*t)*(1 - q^-2*t^3))
+</code></pre>
+<p>To get the output a little closer to how we have it formatted above, we can set <code>increasing_order</code> to <code>False</code>.</p>
+<pre><code class="language-python">sage: br.brat(Z2, increasing_order=False)
+(1 + 2*q^-1*t - 3*q^-1 - 3*q^-2*t + 2*q^-2 + q^-3*t)/((1 - q^-1*t)*(1 - q^-2*t^3))
+</code></pre>
+<p>&ensp;</p>
+<h2 id="negative-exponents-ii">Negative Exponents II</h2>
+<p>We express the ask zeta function associated with the complete graph on four vertices:
+[
+    W_{minus} = \dfrac{q^3 - t}{q^3(1 - t)(1 - qt)}.
+]</p>
+<p>See <a href="https://arxiv.org/abs/1908.09589">Rossmann&ndash;Voll</a> for details.</p>
+<pre><code class="language-python">sage: q, t = var('q t')
+sage: W_minus = (q^3 - t)/(q^3*(1 - t)*(1 - q*t))
+sage: W_minus
+(q^3 - t)/((q*t - 1)*q^3*(t - 1))
+sage: br.brat(W_minus)
+-(q^-3*t - 1)/((1 - t)*(1 - q*t))
+</code></pre>
+<p>If we set <code>increasing_order</code> to <code>False</code>, then the <code>1</code> will be the leading term, and since it has a positive coefficient, we will avoid the negative scalar in front.</p>
+<pre><code class="language-python">sage: br.brat(W_minus, increasing_order=False)
+(1 - q^-3*t)/((1 - t)*(1 - q*t))
+</code></pre>
+<p>Moreover, if we want to make the factor $q^3$ in the denominator explicit, we can set <code>hide_monomial</code> to <code>False</code>.</p>
+<pre><code class="language-python">sage: br.brat(W_minus, increasing_order=False, hide_monomial=False)
+(q^3 - t)/(q^3*(1 - t)*(1 - q*t))
+</code></pre>
+<p>&ensp;</p>
+<h2 id="pretty-print-pretty_print">Pretty Print (pretty_print)</h2>
 <p>When applying the SageMath function <code>pretty_print</code> (or when it is on) in a Jupyter notebook, the brat will be displayed with $\LaTeX$.</p>
 <p>There are many ways to set up a Jupyter notebook. One way is to run the following.</p>
-<pre><code class="language-bash">$ sage -n Jupyter
+<pre><code class="language-bash">$ sage -n jupyter
 </code></pre>
 <p>In our Jupyter notebook, we observe the following.
 <img alt="" src="../pretty_print.png" /></p></div>
@@ -263,7 +319,7 @@ sage: P
 
         <footer class="col-md-12">
             <hr>
-                <p>&copy; 2024 J. Maglione</p>
+                <p>&copy; 2024&ndash;2025 J. Maglione</p>
             <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
         <script>

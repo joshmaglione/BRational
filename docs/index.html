@@ -8,7 +8,7 @@
         <meta name="author" content="Joshua Maglione">
         
         <link rel="shortcut icon" href="img/favicon.ico">
-        <title>BRational Documentation</title>
+        <title>BRational</title>
         <link href="css/bootstrap.min.css" rel="stylesheet">
         <link href="css/font-awesome.min.css" rel="stylesheet">
         <link href="css/base.css" rel="stylesheet">
@@ -23,7 +23,7 @@
     <body class="homepage">
         <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
             <div class="container">
-                <a class="navbar-brand" href=".">BRational Documentation</a>
+                <a class="navbar-brand" href=".">BRational</a>
                 <!-- Expander button -->
                 <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
                     <span class="navbar-toggler-icon"></span>
@@ -83,15 +83,19 @@
             
             <li class="nav-item" data-level="1"><a href="#brational" class="nav-link">BRational</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-level="2"><a href="#purpose" class="nav-link">Purpose</a>
+            <li class="nav-item" data-level="2"><a href="#install" class="nav-link">Install</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#setup" class="nav-link">Setup</a>
+            <li class="nav-item" data-level="2"><a href="#update" class="nav-link">Update</a>
               <ul class="nav flex-column">
               </ul>
             </li>
             <li class="nav-item" data-level="2"><a href="#importing" class="nav-link">Importing</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#citing" class="nav-link">Citing</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -103,30 +107,62 @@
                     <div class="col-md-9" role="main">
 
 <h1 id="brational">BRational</h1>
-<p>Author: <a href="https://www.joshmaglione/com">Joshua Maglione</a>.</p>
-<p>Documentation for the <a href="https://github.com/joshmaglione/brational">BRational</a> package for <a href="https://www.sagemath.org/">SageMath</a>.</p>
-<h2 id="purpose">Purpose</h2>
-<p>The goal of <strong>BRational</strong> is to format certain rational functions in SageMath in a particular format. These rational functions contain the class of generating series, which is our primary use case. The main purpose is to enable users to manipulate such expressions and to rewrite expressions for ease of comprehension. </p>
-<h2 id="setup">Setup</h2>
-<p>The simplest way to <strong>install</strong> BRational is to run the following </p>
+<p>&emsp;</p>
+<p>The goal of <strong>BRational</strong> is to format certain rational functions in SageMath to enable users to think entirely about their own work and interests and not about formatting.</p>
+<p>&ensp;</p>
+<h2 id="install">Install</h2>
+<p>The simplest way to install BRational is to run the following </p>
+<ul>
+<li>in a terminal:</li>
+</ul>
 <pre><code class="language-sh">$ sage --pip install brational
 </code></pre>
+<ul>
+<li>or in SageMath:</li>
+</ul>
+<pre><code class="language-python">sage: %pip install brational
+</code></pre>
 <p>Alternatively, one can download the <a href="https://github.com/joshmaglione/brational/releases/latest">latest release</a> and unzip it into a directory that SageMath can find for importing.</p>
-<p>To <strong>update</strong> an older version of BRational to the latest version, run the following </p>
+<p>&ensp;</p>
+<h2 id="update">Update</h2>
+<p>To update an older version of BRational to the latest version, run the following </p>
+<ul>
+<li>in a terminal: </li>
+</ul>
 <pre><code class="language-sh">$ sage --pip install brational --upgrade 
 </code></pre>
+<ul>
+<li>or in SageMath:</li>
+</ul>
+<pre><code class="language-python">sage: %pip install brational --upgrade 
+</code></pre>
 <p>BRational has no external dependencies and is compatible with SageMath 9.6 and later. It may work just fine with earlier versions of SageMath, but these have not been tested.</p>
+<p>&ensp;</p>
 <h2 id="importing">Importing</h2>
 <p>Import BRational during your SageMath run with the following</p>
 <pre><code class="language-python">import brational as br
 </code></pre>
-<p>Throughout this documentation, we use <code>br</code> for the reference name of <code>brational</code>.</p></div>
+<p>Throughout this documentation, we use <code>br</code> for the reference name of <code>brational</code>.</p>
+<p>&ensp;</p>
+<h2 id="citing">Citing</h2>
+<p>If you would like to cite us, please adapt the following to your style.</p>
+<ul>
+<li>Joshua Maglione. BRational: Beautiful formatting of rational functions. Version 2.0. 2025. URL: https://github.com/joshmaglione/BRational.</li>
+</ul>
+<p>BibTeX format:</p>
+<pre><code class="language-bibtex">@misc{BRational,
+  author       = {Joshua Maglione},
+  title        = {{BRational: Beautiful formatting of rational functions}. {V}ersion 2.0},
+  note         = {URL: \url{https://github.com/joshmaglione/BRational}},
+  year         = {2025},
+}
+</code></pre></div>
             </div>
         </div>
 
         <footer class="col-md-12">
             <hr>
-                <p>&copy; 2024 J. Maglione</p>
+                <p>&copy; 2024&ndash;2025 J. Maglione</p>
             <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
         <script>
@@ -215,8 +251,3 @@
 
     </body>
 </html>
-
-<!--
-MkDocs version : 1.6.0
-Build Date UTC : 2024-12-15 11:59:51.059578+00:00
--->
