@@ -177,7 +177,7 @@ First we write this in the usual way, using symbolic variables. </p>
 <pre><code class="language-python">sage: x, y = var('x y')
 sage: f = (1 + x*y + x^2*y^2)/((1 - x)*(1 - y))
 sage: f
-(1 + x*y + x^2*y^2)/((1 - y)*(1 - x))
+(x^2*y^2 + x*y + 1)/((x - 1)*(y - 1))
 </code></pre>
 <p>Now we build a <code>brat</code> from $f$.</p>
 <pre><code class="language-python">sage: F = br.brat(f)
