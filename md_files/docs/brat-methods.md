@@ -39,7 +39,7 @@ Note that the denominator is $(1 - x)^3(1 - x^3)^2(1 - x^4)(1 - x^5)$, which is 
 
 ```python
 sage: H.change_denominator(
-	(1 - x) * (1 - x^2) * (1 - x^3)**2 * (1 - x^4) * (1 - x^5)
+	(1 - x) * (1 - x^2) * (1 - x^3)^2 * (1 - x^4) * (1 - x^5)
 )
 (1 + x^3 + x^4 + x^5 + x^7 + x^8 + x^9 + x^12)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
 ```
@@ -169,7 +169,7 @@ Keyword argument:
 
 - `ratio`: returns the ratio of the original brat divided by the brat with inverted variables. Default: `False`.
 
-### Example 1
+### Example
 
 We verify that, after inverting the variables of 
 \[ 

@@ -182,7 +182,7 @@ sage: d_sig = {
 }
 sage: H = br.brat(numerator=R(1), denominator_signature=d_sig)
 sage: H
-1/((1 - X1)*(1 - X2)^3*(1 - X1*X2*X3)^4*(1 - X1*X2*X3^2))
+1/(8*(1 - X1)*(1 - X2)^3*(1 - X1*X2*X3)^4*(1 - X1*X2*X3^2))
 ```
 
 &ensp;

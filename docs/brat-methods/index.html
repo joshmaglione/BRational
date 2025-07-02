@@ -167,7 +167,7 @@ sage: H
 </code></pre>
 <p>Note that the denominator is $(1 - x)^3(1 - x^3)^2(1 - x^4)(1 - x^5)$, which is not exactly what we want. </p>
 <pre><code class="language-python">sage: H.change_denominator(
-    (1 - x) * (1 - x^2) * (1 - x^3)**2 * (1 - x^4) * (1 - x^5)
+    (1 - x) * (1 - x^2) * (1 - x^3)^2 * (1 - x^4) * (1 - x^5)
 )
 (1 + x^3 + x^4 + x^5 + x^7 + x^8 + x^9 + x^12)/((1 - x)*(1 - x^2)*(1 - x^3)^2*(1 - x^4)*(1 - x^5))
 </code></pre>
@@ -263,7 +263,7 @@ t^3 - 6*t^2 + 11*t - 6
 <ul>
 <li><code>ratio</code>: returns the ratio of the original brat divided by the brat with inverted variables. Default: <code>False</code>.</li>
 </ul>
-<h3 id="example-1">Example 1</h3>
+<h3 id="example_4">Example</h3>
 <p>We verify that, after inverting the variables of 
 [ 
     E = \dfrac{1 + 26T + 66T^2 + 26T^3 + T^4}{(1 - T)^5},
@@ -295,7 +295,7 @@ sage: E.invert_variables()
 <li><code>factor</code>: factor the numerator polynomial. Default: <code>False</code>.</li>
 <li><code>split</code>: if true, returns a pair of strings formatted in $\LaTeX$: the first is the numerator and the second is the denominator. Default: <code>False</code>.</li>
 </ul>
-<h4 id="example_4">Example</h4>
+<h4 id="example_5">Example</h4>
 <p>We obtain a $\LaTeX$ formatting of the following rational function:
 [ 
     \dfrac{1 + 2t^2 + 4t^4 + 4t^6 + 2t^8 + t^{10}}{\prod_{i=1}^5(1 - t^i)} . 
@@ -318,7 +318,7 @@ sage: F.latex()
 <p>&ensp;</p>
 <h2 id="numerator">.numerator</h2>
 <p>Returns the polynomial in the numerator of the rational function as a <code>brat</code>.</p>
-<h3 id="example_5">Example</h3>
+<h3 id="example_6">Example</h3>
 <p>We build a <code>brat</code> for the following rational function and extract the numerator:
 [ 
     f(x,y) = \dfrac{1 + xy^2}{1 - x^2y^4}. 
@@ -337,7 +337,7 @@ sage: f.numerator()
 <h2 id="rational_function">.rational_function</h2>
 <p>Returns the reduced rational function. The underlying type of this object is not a <code>brat</code>. </p>
 <p>This method should be used if you do not want SageMath to convert to a <code>brat</code> after applying operations to the rational function.</p>
-<h3 id="example_6">Example</h3>
+<h3 id="example_7">Example</h3>
 <p>We build a <code>brat</code> for the following rational function and extract the rational function:
 [ 
     f(x,y) = \dfrac{1 + xy^2}{1 - x^2y^4}. 
@@ -356,7 +356,7 @@ sage: f.rational_function()
 <h2 id="subs">.subs</h2>
 <p>Given a dictionary of the desired substitutions, return the new <code>brat</code> obtained by performing the substitutions. </p>
 <p>This works in the same as the <code>subs</code> method for rational functions in SageMath. </p>
-<h3 id="example_7">Example</h3>
+<h3 id="example_8">Example</h3>
 <p>We apply some substitutions to the following rational function:
 [ 
     C(T,Y) = \dfrac{1 + 3Y + 2Y^2 + (2 + 3Y + Y^2)T}{(1 - T)^2} . 
@@ -380,7 +380,7 @@ sage: C
 <p>&ensp;</p>
 <h2 id="variables">.variables</h2>
 <p>Returns the polynomial variables used.</p>
-<h4 id="example_8">Example</h4>
+<h4 id="example_9">Example</h4>
 <p>We define the following rational function using symbolic variables
 [ 
     f(x,y,z) = \dfrac{1 + x^2y^2z^2}{(1 - xy)(1 - xz)(1 - yz)}

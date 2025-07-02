@@ -1,7 +1,7 @@
 # BRational
 A SageMath package to beautifully format rational functions arising from enumerative algebra into plaintext and latex.
 
-Version: 2.0
+Version: 2.0.1
 
 [Documentation](https://joshmaglione.com/BRational/)
 

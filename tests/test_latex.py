@@ -226,6 +226,9 @@ def test_previous_reported_bugs():
 	R2 = brat((t**8 - 1)/((t**6 - 1)*(t**5 - 1)*(t**2 + t + 1)*(t - 1)**5))
 	assert R1.latex() == "\\dfrac{1 - t^8}{(1 - t)^4(1 - t^3)(1 - t^5)(1 - t^6)}"
 	assert R2.latex() == "\\dfrac{1 - t^8}{(1 - t)^4(1 - t^3)(1 - t^5)(1 - t^6)}"
+	q, X = polygens(QQ, ('q', 'X'))
+	R3 = brat(numerator=-q**2*X**2 + q, denominator=-q**6*X**3 + q**5*X**4 + q**6*X**2 - q**5*X**3 + q**4*X**2 - q**3*X**3 - q**4*X + 2*q**3*X**2 - q**2*X**3 - q**3*X + q**2*X**2 - q*X + X**2 + q - X)
+	assert R3.latex() == "\\dfrac{1 - qX^2}{(1 - q^{-1}X)(1 - X)(1 - q^2X)(1 - q^3X)}"
 
 
 def test_Zeta_examples():

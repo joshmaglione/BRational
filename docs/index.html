@@ -91,6 +91,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#uninstall" class="nav-link">Uninstall</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-level="2"><a href="#importing" class="nav-link">Importing</a>
               <ul class="nav flex-column">
               </ul>
@@ -138,6 +142,19 @@
 </code></pre>
 <p>BRational has no external dependencies and is compatible with SageMath 9.6 and later. It may work just fine with earlier versions of SageMath, but these have not been tested.</p>
 <p>&ensp;</p>
+<h2 id="uninstall">Uninstall</h2>
+<p>Assuming you installed BRational by using <code>pip</code> (see <a href="#install">Install</a>), then you can run one of the following</p>
+<ul>
+<li>in a terminal:</li>
+</ul>
+<pre><code class="language-sh">$ sage --pip uninstall brational
+</code></pre>
+<ul>
+<li>or in SageMath:</li>
+</ul>
+<pre><code class="language-python">sage: %pip uninstall brational
+</code></pre>
+<p>&ensp;</p>
 <h2 id="importing">Importing</h2>
 <p>Import BRational during your SageMath run with the following</p>
 <pre><code class="language-python">import brational as br
@@ -147,13 +164,13 @@
 <h2 id="citing">Citing</h2>
 <p>If you have used BRational and would like to cite us, please adapt the following to your style.</p>
 <ul>
-<li>Joshua Maglione, <em>BRational: Beautiful formatting of rational functions</em>, version 2.0, 2025, https://github.com/joshmaglione/BRational.</li>
+<li>Joshua Maglione, <em>BRational: Beautiful formatting of rational functions</em>, version 2.0.1, 2025, https://github.com/joshmaglione/BRational.</li>
 </ul>
 <p>BibTeX format:</p>
 <pre><code class="language-bibtex">@software{BRational,
   author       = {Joshua Maglione},
   title        = {BRational: Beautiful formatting of rational functions},
-  version      = {2.0},
+  version      = {2.0.1},
   url          = {https://github.com/joshmaglione/BRational},
   year         = {2025},
 }

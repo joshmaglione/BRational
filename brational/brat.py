@@ -64,7 +64,6 @@ def is_finite_gp(f):
 		my_print(DEBUG, f"Determined given polynomial\n\t{f=}\nis a finite geometric progression:\n\t({out})*(1 - ({r})^{len(m)})/(1 - ({r}))\nbut cannot determine equality.")
 		raise RuntimeError("Unexpected behavior. Contact Josh.")
 	return (out, r, len(m))
-# MAYBE WORK WITH VECTORS
 
 # Play games and hope you turn f into an element of P.
 def get_poly(f, P):
@@ -148,7 +147,7 @@ def get_signature(R, N, D):
 	while len(D_factors) > 0:
 		f, e = D_factors.pop(0)
 		m_f = f.monomials() 	## Need to ignore constants??
-		if len(m_f) == 2 and prod(f.coefficients()) < 0 and R(1) in m_f and f.monomial_coefficient(R(1)) in [-1, 1]:
+		if len(m_f) == 2 and prod(f.coefficients()) < 0:
 			my_print(DEBUG, f"Polynomial: {f} -- is GP", 1)
 			# We make sure that if there are negative values, the first non-zero
 			# value is negative. We will always have a positive.
@@ -933,7 +932,7 @@ class brat:
 			(-T - 26*T^2 - 66*T^3 - 26*T^4 - T^5)/(1 - T)^5
 		"""
 		if ratio:
-			return brat(self.invert_variables()/self)
+			return self.invert_variables()/self
 		varbs = self._ring.gens()
 		mon = lambda v: prod(x**e for x, e in zip(varbs, v))
 		factor = prod(

@@ -46,6 +46,26 @@ BRational has no external dependencies and is compatible with SageMath 9.6 and l
 
 &ensp;
 
+
+## Uninstall
+
+Assuming you installed BRational by using `pip` (see [Install](#install)), then you can run one of the following
+
+- in a terminal:
+
+```sh
+$ sage --pip uninstall brational
+```
+
+- or in SageMath:
+
+```python
+sage: %pip uninstall brational
+```
+
+&ensp;
+
+
 ## Importing
 
 Import BRational during your SageMath run with the following
@@ -62,7 +82,7 @@ Throughout this documentation, we use `br` for the reference name of `brational`
 
 If you have used BRational and would like to cite us, please adapt the following to your style.
 
-- Joshua Maglione, *BRational: Beautiful formatting of rational functions*, version 2.0, 2025, https://github.com/joshmaglione/BRational.
+- Joshua Maglione, *BRational: Beautiful formatting of rational functions*, version 2.0.1, 2025, https://github.com/joshmaglione/BRational.
 
 BibTeX format:
 
@@ -70,7 +90,7 @@ BibTeX format:
 @software{BRational,
   author       = {Joshua Maglione},
   title        = {BRational: Beautiful formatting of rational functions},
-  version      = {2.0},
+  version      = {2.0.1},
   url          = {https://github.com/joshmaglione/BRational},
   year         = {2025},
 }
