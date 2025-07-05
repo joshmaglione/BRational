@@ -90,7 +90,7 @@ BibTeX format:
 @misc{BRational,
   author       = {Joshua Maglione},
   title        = {{BR}ational: {B}eautiful formatting of rational functions, version 2.0.1},
-  note          = {\url{https://github.com/joshmaglione/BRational}},
+  note         = {\url{https://github.com/joshmaglione/BRational}},
   year         = {2025},
 }
 ```
