@@ -87,11 +87,10 @@ If you have used BRational and would like to cite us, please adapt the following
 BibTeX format:
 
 ```bibtex
-@software{BRational,
+@misc{BRational,
   author       = {Joshua Maglione},
-  title        = {BRational: Beautiful formatting of rational functions},
-  version      = {2.0.1},
-  url          = {https://github.com/joshmaglione/BRational},
+  title        = {{BR}ational: {B}eautiful formatting of rational functions, version 2.0.1},
+  note          = {\url{https://github.com/joshmaglione/BRational}},
   year         = {2025},
 }
 ```
